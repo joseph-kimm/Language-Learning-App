@@ -1,10 +1,10 @@
 import Image from 'next/image';
-import { lusitana } from '@/nextjs-dashboard/app/ui/fonts';
-import Search from '@/nextjs-dashboard/app/ui/search';
+import { lusitana } from '@/app/ui/fonts';
+import Search from '@/app/ui/search';
 import {
   CustomersTableType,
   FormattedCustomersTable,
-} from '@/nextjs-dashboard/app/lib/definitions';
+} from '@/app/lib/definitions';
 
 export default async function CustomersTable({
   customers,
