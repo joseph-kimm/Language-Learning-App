@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -20,16 +24,21 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "next-env.d.ts",
     "nextjs-dashboard/.next/types/**/*.ts",
     "nextjs-dashboard/app/lib/placeholder-data.ts",
-    "scripts/seed.js"
+    "scripts/seed.js",
+    ".next/types/**/*.ts"
   ],
-  "exclude": ["nextjs-dashboard/node_modules"]
+  "exclude": [
+    "nextjs-dashboard/node_modules"
+  ]
 }
