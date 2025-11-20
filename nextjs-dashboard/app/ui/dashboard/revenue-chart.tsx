@@ -1,7 +1,7 @@
-import { generateYAxis } from '@/nextjs-dashboard/app/lib/utils';
+import { generateYAxis } from '@/app/lib/utils';
 import { CalendarIcon } from '@heroicons/react/24/outline';
-import { lusitana } from '@/nextjs-dashboard/app/ui/fonts';
-import { Revenue } from '@/nextjs-dashboard/app/lib/definitions';
+import { lusitana } from '@/app/ui/fonts';
+import { Revenue } from '@/app/lib/definitions';
 
 // This component is representational only.
 // For data visualization UI, check out:
