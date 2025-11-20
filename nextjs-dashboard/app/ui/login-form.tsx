@@ -1,4 +1,4 @@
-import { lusitana } from '@/app/ui/fonts';
+import { lusitana } from '@/nextjs-dashboard/app/ui/fonts';
 import {
   AtSymbolIcon,
   KeyIcon,
