@@ -108,7 +108,7 @@ export async function updateInvoice(id: string, formData: FormData) {
     `;
 
   } catch (error) {
-    throw new Error('Database Error: Failed to Create Invoice.');
+    throw new Error('Database Error: Failed to update Invoice.');
   }
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
@@ -123,8 +123,6 @@ export async function deleteInvoice(id: string) {
     revalidatePath('/dashboard/invoices');
   
   } catch (error) {
-    return {
-      message: "error deleting invoice"
-    }
+    throw new Error('Database Error: Failed to delete Invoice.');
   }
 }
