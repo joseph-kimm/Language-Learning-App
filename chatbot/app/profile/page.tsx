@@ -3,16 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { IoArrowBack } from 'react-icons/io5';
 import SurveyForm from '@/components/survey/SurveyForm';
-import { SurveyData } from '@/types/survey';
 import styles from './page.module.css';
 
 export default function SurveyPage() {
   const router = useRouter();
-
-  const handleComplete = (data: SurveyData) => {
-    console.log('Survey completed successfully:', data);
-    router.push('/');
-  };
 
   return (
     <div className={styles.layout}>
@@ -28,7 +22,7 @@ export default function SurveyPage() {
               Help us personalize your language learning experience by telling us a bit about yourself and your goals.
             </p>
           </div>
-          <SurveyForm onComplete={handleComplete} />
+          <SurveyForm />
         </div>
       </main>
     </div>

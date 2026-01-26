@@ -5,11 +5,31 @@ export const typeDefs = gql`
     getChat(chatId: ID!): Chat
     getChats(userId: ID): [Chat!]!
     getMessages(chatId: ID!): [Message!]!
+    getUserProfile(userId: ID!): UserProfile
   }
 
   type Mutation {
     createChat(userId: ID): Chat
     addMessage(chatId: ID!, sender: Sender!, text: String!): Message
+    saveUserProfile(input: UserProfileInput!): UserProfile!
+  }
+
+  # Input type for nested learning language data
+  input LearningLanguageInput {
+    language: TargetLanguage!
+    proficiencyLevel: ProficiencyLevel!
+    learningGoals: String!
+  }
+
+  # Input type for saveUserProfile mutation (excludes server-managed timestamps)
+  input UserProfileInput {
+    userId: ID!
+    introduction: String
+    nativeLanguage: NativeLanguage!
+    interests: [Interests!]!
+    additionalInterests: [String!]
+    correctionStyle: CorrectionStyle!
+    learningLanguages: [LearningLanguageInput!]!
   }
 
   type Subscription {
@@ -40,6 +60,7 @@ export const typeDefs = gql`
     userId: ID!
     createdAt: String!
     lastMessage: Message
+    language: Language
   }
 
   enum Sender {
@@ -55,13 +76,19 @@ export const typeDefs = gql`
 
   type UserProfile {
     userId: ID!
-    nativeLanuage: Language!
-    targetLangauge: Language!
+    introduction: String
+    nativeLanguage: NativeLanguage!
     interests: [Interests!]!
     additionalInterests: [String!]!
-    proficiencyLevel: ProficiencyLevel!
     correctionStyle: CorrectionStyle!
-    introduction: String!
+    learningLanguages: [LearningLanguage]!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type LearningLanguage {
+    language: TargetLanguage!
+    proficiencyLevel: ProficiencyLevel!
     learningGoals: String!
   }
 
@@ -73,7 +100,6 @@ export const typeDefs = gql`
     NEVER
   }
 
-
   enum ProficiencyLevel {
     BEGINNER
     ELEMENTARY
@@ -83,14 +109,42 @@ export const typeDefs = gql`
     NATIVE
   }
 
-  enum Language {
+  enum TargetLanguage {
     ENGLISH
     KOREAN
     SPANISH
+  }
+
+  enum NativeLanguage {
+    ARABIC
+    BENGALI
+    CANTONESE
+    DUTCH
+    ENGLISH
     FRENCH
     GERMAN
-    CHINESE
+    GREEK
+    HINDI
+    INDONESIAN
+    ITALIAN
     JAPANESE
+    KOREAN
+    MANDARIN
+    PERSIAN
+    POLISH
+    PORTUGUESE
+    PUNJABI
+    RUSSIAN
+    SPANISH
+    SWAHILI
+    TAGALOG
+    TAMIL
+    THAI
+    TURKISH
+    UKRAINIAN
+    URDU
+    VIETNAMESE
+    OTHER
   }
 
   enum Interests {

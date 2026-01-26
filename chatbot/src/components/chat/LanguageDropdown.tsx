@@ -2,18 +2,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Language, getLanguageLabel } from '@/types/survey';
+import { TargetLanguage, getLanguageLabel } from '@/types/survey';
 import styles from './LanguageDropdown.module.css';
 
 interface LanguageDropdownProps {
-  currentLanguage: Language;
+  currentLanguage: TargetLanguage;
 }
 
-const getLanguageFlag = (lang: Language): string => {
-  const flags: Record<Language, string> = {
-    [Language.ENGLISH]: '/images/english_flag.png',
-    [Language.KOREAN]: '/images/korean_flag.png',
-    [Language.SPANISH]: '/images/spanish_flag.png'
+const getLanguageFlag = (lang: TargetLanguage): string => {
+  const flags: Record<TargetLanguage, string> = {
+    [TargetLanguage.ENGLISH]: '/images/english_flag.png',
+    [TargetLanguage.KOREAN]: '/images/korean_flag.png',
+    [TargetLanguage.SPANISH]: '/images/spanish_flag.png'
   };
   return flags[lang];
 };
@@ -62,7 +62,7 @@ export default function LanguageDropdown({ currentLanguage }: LanguageDropdownPr
 
       {isOpen && (
         <div className={styles.dropdownMenu}>
-          {Object.values(Language).map((lang) => (
+          {(Object.values(TargetLanguage) as TargetLanguage[]).map((lang) => (
             <div
               key={lang}
               className={`${styles.dropdownItem} ${lang === currentLanguage ? styles.active : ''}`}

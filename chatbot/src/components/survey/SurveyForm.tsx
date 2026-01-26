@@ -1,16 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { gql } from 'graphql-tag';
+import { useMutation } from '@apollo/client/react';
 import styles from './SurveyForm.module.css';
 import {
-  Language,
+  TargetLanguage,
   NativeLanguage,
   ProficiencyLevel,
   Interests,
   CorrectionStyle,
-  SurveyData,
   TargetLanguageData,
   TargetLanguageFormState,
+  SaveUserProfileData,
   getLanguageLabel,
   getNativeLanguageLabel,
   getProficiencyLabel,
@@ -18,9 +21,25 @@ import {
   getCorrectionStyleLabel
 } from '@/types/survey';
 
-interface SurveyFormProps {
-  onComplete: (data: SurveyData) => void;
-}
+const SAVE_USER_PROFILE_MUTATION = gql`
+  mutation SaveUserProfile($input: UserProfileInput!) {
+    saveUserProfile(input: $input) {
+      userId
+      introduction
+      nativeLanguage
+      interests
+      additionalInterests
+      correctionStyle
+      learningLanguages {
+        language
+        proficiencyLevel
+        learningGoals
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
 const createEmptyLanguageEntry = (): TargetLanguageFormState => ({
   targetLanguage: '',
@@ -28,7 +47,10 @@ const createEmptyLanguageEntry = (): TargetLanguageFormState => ({
   learningGoals: ''
 });
 
-export default function SurveyForm({ onComplete }: SurveyFormProps) {
+export default function SurveyForm() {
+  const router = useRouter();
+  const [saveUserProfile, { loading, error }] = useMutation<SaveUserProfileData>(SAVE_USER_PROFILE_MUTATION);
+
   // User section state
   const [introduction, setIntroduction] = useState<string>('');
   const [interests, setInterests] = useState<Interests[]>([]);
@@ -40,8 +62,6 @@ export default function SurveyForm({ onComplete }: SurveyFormProps) {
   const [targetLanguages, setTargetLanguages] = useState<TargetLanguageFormState[]>([
     createEmptyLanguageEntry()
   ]);
-
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleInterestToggle = (interest: Interests) => {
     setInterests(prev =>
@@ -132,50 +152,47 @@ export default function SurveyForm({ onComplete }: SurveyFormProps) {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
       const additionalInterestsArray = additionalInterests
         .split(',')
         .map(s => s.trim())
         .filter(s => s.length > 0);
 
-      const targetLanguagesData: TargetLanguageData[] = targetLanguages.map(lang => ({
-        targetLanguage: lang.targetLanguage as Language,
-        proficiencyLevel: lang.proficiencyLevel as ProficiencyLevel,
-        learningGoals: lang.learningGoals.trim()
-      }));
-
-      const surveyData: SurveyData = {
+      // Transform form data to GraphQL input format
+      const input = {
+        userId: 'mock-user-123',
         introduction: introduction.trim(),
-        interests,
+        nativeLanguage: nativeLanguage,
+        interests: interests,
         additionalInterests: additionalInterestsArray,
-        nativeLanguage: nativeLanguage as NativeLanguage,
-        correctionStyle: correctionStyle as CorrectionStyle,
-        targetLanguages: targetLanguagesData
+        correctionStyle: correctionStyle,
+        learningLanguages: targetLanguages.map(lang => ({
+          language: lang.targetLanguage,
+          proficiencyLevel: lang.proficiencyLevel,
+          learningGoals: lang.learningGoals.trim()
+        }))
       };
 
-      console.log('Survey Data:', surveyData);
+      const result = await saveUserProfile({ variables: { input } });
 
-      setTimeout(() => {
-        setIsSubmitting(false);
-        onComplete(surveyData);
-      }, 500);
+      if (result.data?.saveUserProfile) {
+        console.log('Profile saved:', result.data.saveUserProfile);
+        router.push('/');
+      }
     } catch (err) {
-      console.error('Error submitting survey:', err);
-      alert('Failed to submit survey. Please try again.');
-      setIsSubmitting(false);
+      console.error('Error saving profile:', err);
+      alert('Failed to save profile. Please try again.');
     }
   };
 
   // Get available languages for a language entry (exclude native and already selected by others)
-  const getAvailableLanguages = (currentIndex: number): Language[] => {
+  const getAvailableLanguages = (currentIndex: number): TargetLanguage[] => {
     const selectedByOthers = targetLanguages
       .filter((_, i) => i !== currentIndex)
       .map(l => l.targetLanguage)
       .filter(l => l !== '');
 
-    return Object.values(Language).filter(
+    return Object.values(TargetLanguage).filter(
       lang => lang !== nativeLanguage && !selectedByOthers.includes(lang)
     );
   };
@@ -313,9 +330,9 @@ export default function SurveyForm({ onComplete }: SurveyFormProps) {
                       </option>
                     ))}
                     {/* Keep currently selected value in options even if it would be filtered */}
-                    {lang.targetLanguage && !getAvailableLanguages(index).includes(lang.targetLanguage as Language) && (
+                    {lang.targetLanguage && !getAvailableLanguages(index).includes(lang.targetLanguage as TargetLanguage) && (
                       <option key={lang.targetLanguage} value={lang.targetLanguage}>
-                        {getLanguageLabel(lang.targetLanguage as Language)}
+                        {getLanguageLabel(lang.targetLanguage as TargetLanguage)}
                       </option>
                     )}
                   </select>
@@ -366,12 +383,18 @@ export default function SurveyForm({ onComplete }: SurveyFormProps) {
           </button>
         </div>
 
+        {error && (
+          <div className={styles.errorMessage}>
+            Failed to save profile. Please try again.
+          </div>
+        )}
+
         <button
           type="submit"
           className={styles.submitButton}
-          disabled={isSubmitting}
+          disabled={loading}
         >
-          {isSubmitting ? 'Submitting...' : 'Complete Profile'}
+          {loading ? 'Saving...' : 'Complete Profile'}
         </button>
       </form>
     </div>

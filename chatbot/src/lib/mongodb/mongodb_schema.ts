@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { Sender, IMessageDoc, IChatDoc, IUserDoc } from '@/types/chat';
+import { IUserProfileDoc, NativeLanguage, Interests, CorrectionStyle, TargetLanguage, ProficiencyLevel } from '@/types/survey';
 
 /**
  * MongoDB schemas and models (server-side only)
@@ -10,6 +11,7 @@ import { Sender, IMessageDoc, IChatDoc, IUserDoc } from '@/types/chat';
 export interface IMessageDocument extends IMessageDoc, Document {}
 export interface IChatDocument extends IChatDoc, Document {}
 export interface IUserDocument extends IUserDoc, Document {}
+export interface IUserProfileDocument extends IUserProfileDoc, Document {}
 
 // Re-export for backwards compatibility
 export { Sender };
@@ -64,6 +66,45 @@ const UserSchema = new Schema<IUserDocument>({
   createdAt: { type: Date, default: Date.now }
 });
 
+// LearningLanguage sub-schema (embedded in UserProfile)
+const LearningLanguageSchema = new Schema({
+  language: {
+    type: String,
+    enum: Object.values(TargetLanguage),
+    required: true
+  },
+  proficiencyLevel: {
+    type: String,
+    enum: Object.values(ProficiencyLevel),
+    required: true
+  },
+  learningGoals: { type: String, required: true }
+}, { _id: false });
+
+// UserProfile Schema - one profile per user
+const UserProfileSchema = new Schema<IUserProfileDocument>({
+  userId: { type: String, required: true, unique: true, index: true },
+  introduction: { type: String, default: '' },
+  nativeLanguage: {
+    type: String,
+    enum: Object.values(NativeLanguage),
+    required: true
+  },
+  interests: [{
+    type: String,
+    enum: Object.values(Interests)
+  }],
+  additionalInterests: [{ type: String }],
+  correctionStyle: {
+    type: String,
+    enum: Object.values(CorrectionStyle),
+    required: true
+  },
+  learningLanguages: [LearningLanguageSchema],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
 // ============================================
 // Models
 // ============================================
@@ -71,3 +112,4 @@ const UserSchema = new Schema<IUserDocument>({
 export const Message = mongoose.models.Message || mongoose.model<IMessageDocument>('Message', MessageSchema);
 export const Chat = mongoose.models.Chat || mongoose.model<IChatDocument>('Chat', ChatSchema);
 export const User = mongoose.models.User || mongoose.model<IUserDocument>('User', UserSchema);
+export const UserProfile = mongoose.models.UserProfile || mongoose.model<IUserProfileDocument>('UserProfile', UserProfileSchema);

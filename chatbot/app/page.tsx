@@ -7,7 +7,7 @@ import ChatInterface from '@/components/chat/ChatInterface';
 import SideNav from '@/components/navigation/SideNav';
 import HamburgerButton from '@/components/navigation/HamburgerButton';
 import LanguageDropdown from '@/components/chat/LanguageDropdown';
-import { Language } from '@/types/survey';
+import { TargetLanguage } from '@/types/survey';
 import styles from './page.module.css';
 
 export default function Home() {
@@ -52,7 +52,7 @@ export default function Home() {
           <div className={styles.pageHeader}>
             <h1 className={styles.title}></h1>
             <div className={styles.headerRight}>
-              <LanguageDropdown currentLanguage={Language.KOREAN} />
+              <LanguageDropdown currentLanguage={TargetLanguage.KOREAN} />
               <button
                 onClick={() => router.push('/profile')}
                 className={styles.settingsButton}

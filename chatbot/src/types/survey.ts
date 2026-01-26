@@ -1,6 +1,6 @@
 // Enums matching GraphQL schema (schema.ts)
 // Target languages - languages the app supports for learning
-export enum Language {
+export enum TargetLanguage {
   ENGLISH = 'ENGLISH',
   KOREAN = 'KOREAN',
   SPANISH = 'SPANISH'
@@ -73,9 +73,61 @@ export enum CorrectionStyle {
   NEVER = 'NEVER'
 }
 
+// ============================================
+// Client-side interfaces (GraphQL responses)
+// Timestamps are strings because JSON serialization converts Date to ISO string
+// ============================================
+
+export interface ILearningLanguage {
+  language: TargetLanguage;
+  proficiencyLevel: ProficiencyLevel;
+  learningGoals: string;
+}
+
+export interface IUserProfile {
+  userId: string;
+  introduction: string;
+  nativeLanguage: NativeLanguage;
+  interests: Interests[];
+  additionalInterests: string[];
+  correctionStyle: CorrectionStyle;
+  learningLanguages: ILearningLanguage[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================
+// Server-side MongoDB document interfaces
+// Timestamps are Date objects as stored in MongoDB
+// ============================================
+
+export interface IUserProfileDoc {
+  userId: string;
+  introduction: string;
+  nativeLanguage: NativeLanguage;
+  interests: Interests[];
+  additionalInterests: string[];
+  correctionStyle: CorrectionStyle;
+  learningLanguages: ILearningLanguage[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ============================================
+// GraphQL response types (for typed Apollo hooks)
+// ============================================
+
+export interface SaveUserProfileData {
+  saveUserProfile: IUserProfile;
+}
+
+// ============================================
+// Form types (UI state, not database entities)
+// ============================================
+
 // Interface for each target language entry
 export interface TargetLanguageData {
-  targetLanguage: Language;
+  targetLanguage: TargetLanguage;
   proficiencyLevel: ProficiencyLevel;
   learningGoals: string;
 }
@@ -110,11 +162,11 @@ export interface SurveyFormState {
 }
 
 // Helper function to convert enum values to display labels
-export const getLanguageLabel = (lang: Language): string => {
-  const labels: Record<Language, string> = {
-    [Language.ENGLISH]: 'English',
-    [Language.KOREAN]: 'Korean',
-    [Language.SPANISH]: 'Spanish',
+export const getLanguageLabel = (lang: TargetLanguage): string => {
+  const labels: Record<TargetLanguage, string> = {
+    [TargetLanguage.ENGLISH]: 'English',
+    [TargetLanguage.KOREAN]: 'Korean',
+    [TargetLanguage.SPANISH]: 'Spanish',
   };
   return labels[lang];
 };

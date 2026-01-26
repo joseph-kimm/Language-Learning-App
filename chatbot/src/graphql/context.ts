@@ -1,4 +1,4 @@
-import { connectToMongoDB } from '@/lib/db/mongoose';
+import { connectToMongoDB } from '@/lib/mongodb/mongoose';
 
 /**
  * GraphQL Context

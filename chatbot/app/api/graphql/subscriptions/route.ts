@@ -3,7 +3,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { typeDefs } from '@/graphql/schema';
 import { resolvers } from '@/graphql/resolvers';
 import { GraphQLContext } from '@/graphql/context';
-import { connectToMongoDB } from '@/lib/db/mongoose';
+import { connectToMongoDB } from '@/lib/mongodb/mongoose';
 
 /**
  * SSE endpoint for GraphQL subscriptions

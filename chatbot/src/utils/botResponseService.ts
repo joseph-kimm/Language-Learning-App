@@ -1,4 +1,4 @@
-import { Chat, Message, Sender } from '@/lib/mongodb_schema';
+import { Chat, Message, Sender } from '@/lib/mongodb/mongodb_schema';
 import { pubsub, CHAT_EVENTS } from '@/lib/pubsub/pubsub';
 import { generateBotResponseStream } from '@/utils/huggingFaceLLM';
 import type { ConversationMessage } from '@/types/llm';
