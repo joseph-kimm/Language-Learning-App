@@ -1,0 +1,75 @@
+/* TTS Button - floating beside message bubble */
+.ttsButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background 0.2s, transform 0.2s;
+  z-index: 1;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.ttsButton:hover {
+  background: #2563eb;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.ttsButton:active {
+  background: #1d4ed8;
+  transform: translateY(-50%) scale(0.95);
+}
+
+.ttsButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Position for bot messages (button on right of bubble) */
+.botMessage {
+  left: calc(100% + 8px);
+}
+
+/* Position for user messages (button on left of bubble) */
+.userMessage {
+  right: calc(100% + 8px);
+}
+
+/* Loading spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+/* Spin animation for loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

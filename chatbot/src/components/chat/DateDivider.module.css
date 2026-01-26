@@ -1,0 +1,26 @@
+/* Date divider container - centered with horizontal lines */
+.dateDivider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.5rem 0; /* Less than message gap (1rem) for subtlety */
+  width: 100%;
+}
+
+/* Horizontal lines on both sides */
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  border: none;
+  background-color: #d0d0d0; /* Subtle gray */
+  margin: 0;
+}
+
+/* Date text in the center */
+.dateText {
+  font-size: 0.75rem; /* Slightly larger than timestamp (0.7rem) */
+  color: #888; /* Muted gray */
+  font-weight: 500; /* Subtle emphasis */
+  white-space: nowrap; /* Prevent text wrapping */
+  padding: 0 0.5rem; /* Breathing room around text */
+}

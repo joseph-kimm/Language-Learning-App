@@ -1,0 +1,59 @@
+.chatListItem {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chatListItem:hover {
+  background-color: #f3f4f6;
+}
+
+.chatInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.createdTime {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.lastMessage {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.messageText {
+  margin: 0;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.messageTime {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.noMessages {
+  margin: 0;
+  font-size: 14px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Selected state */
+.chatListItem.selected {
+  background-color: #dbeafe;
+  border-left: 3px solid #3b82f6;
+  padding-left: 13px;
+}
+
+.chatListItem.selected:hover {
+  background-color: #bfdbfe;
+}

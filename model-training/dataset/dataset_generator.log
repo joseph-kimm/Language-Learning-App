@@ -1,0 +1,135 @@
+2026-01-04 10:31:27,928 - INFO - Starting dataset generation
+2026-01-04 10:31:28,163 - INFO - Successfully initialized Google GenAI client
+2026-01-04 10:31:28,163 - INFO - Starting batch generation: 2000 samples for Spanish
+2026-01-04 10:39:21,642 - INFO - Progress: 50/2000 samples generated for Spanish
+2026-01-04 10:46:47,447 - INFO - Progress: 100/2000 samples generated for Spanish
+2026-01-04 10:54:16,634 - INFO - Progress: 150/2000 samples generated for Spanish
+2026-01-04 11:01:54,858 - INFO - Progress: 200/2000 samples generated for Spanish
+2026-01-04 11:09:44,551 - INFO - Progress: 250/2000 samples generated for Spanish
+2026-01-04 11:17:29,709 - INFO - Progress: 300/2000 samples generated for Spanish
+2026-01-04 11:25:29,958 - INFO - Progress: 350/2000 samples generated for Spanish
+2026-01-04 11:33:03,943 - INFO - Progress: 400/2000 samples generated for Spanish
+2026-01-04 11:40:50,826 - INFO - Progress: 450/2000 samples generated for Spanish
+2026-01-04 11:49:01,236 - INFO - Progress: 500/2000 samples generated for Spanish
+2026-01-04 11:56:44,522 - INFO - Progress: 550/2000 samples generated for Spanish
+2026-01-04 12:04:39,190 - INFO - Progress: 600/2000 samples generated for Spanish
+2026-01-04 12:12:27,561 - INFO - Progress: 650/2000 samples generated for Spanish
+2026-01-04 12:20:00,017 - INFO - Progress: 700/2000 samples generated for Spanish
+2026-01-04 12:27:37,007 - INFO - Progress: 750/2000 samples generated for Spanish
+2026-01-04 12:35:13,009 - INFO - Progress: 800/2000 samples generated for Spanish
+2026-01-04 12:42:59,922 - INFO - Progress: 850/2000 samples generated for Spanish
+2026-01-04 12:50:44,843 - INFO - Progress: 900/2000 samples generated for Spanish
+2026-01-04 12:58:24,961 - INFO - Progress: 950/2000 samples generated for Spanish
+2026-01-04 13:06:37,901 - INFO - Progress: 1000/2000 samples generated for Spanish
+2026-01-04 13:14:31,080 - INFO - Progress: 1050/2000 samples generated for Spanish
+2026-01-04 13:22:40,965 - INFO - Progress: 1100/2000 samples generated for Spanish
+2026-01-04 13:30:56,703 - INFO - Progress: 1150/2000 samples generated for Spanish
+2026-01-04 13:37:56,728 - ERROR - Error generating sample for Spanish (attempt 1194): Expecting value: line 13 column 18 (char 548)
+2026-01-04 13:38:56,583 - INFO - Progress: 1200/2000 samples generated for Spanish
+2026-01-04 13:46:40,742 - INFO - Progress: 1250/2000 samples generated for Spanish
+2026-01-04 13:54:41,985 - INFO - Progress: 1300/2000 samples generated for Spanish
+2026-01-04 14:02:34,983 - INFO - Progress: 1350/2000 samples generated for Spanish
+2026-01-04 14:10:12,452 - INFO - Progress: 1400/2000 samples generated for Spanish
+2026-01-04 14:10:47,731 - ERROR - Error generating sample for Spanish (attempt 1405): Expecting value: line 17 column 18 (char 474)
+2026-01-04 14:18:11,703 - INFO - Progress: 1450/2000 samples generated for Spanish
+2026-01-04 14:26:01,174 - INFO - Progress: 1500/2000 samples generated for Spanish
+2026-01-04 14:33:49,996 - INFO - Progress: 1550/2000 samples generated for Spanish
+2026-01-04 14:41:57,722 - INFO - Progress: 1600/2000 samples generated for Spanish
+2026-01-04 14:50:11,890 - INFO - Progress: 1650/2000 samples generated for Spanish
+2026-01-04 14:58:00,141 - INFO - Progress: 1700/2000 samples generated for Spanish
+2026-01-04 15:05:37,635 - INFO - Progress: 1750/2000 samples generated for Spanish
+2026-01-04 15:13:18,345 - INFO - Progress: 1800/2000 samples generated for Spanish
+2026-01-04 15:21:00,583 - INFO - Progress: 1850/2000 samples generated for Spanish
+2026-01-04 15:24:46,718 - ERROR - Error generating sample for Spanish (attempt 1874): Expecting value: line 17 column 18 (char 385)
+2026-01-04 15:29:18,560 - INFO - Progress: 1900/2000 samples generated for Spanish
+2026-01-04 15:37:08,992 - INFO - Progress: 1950/2000 samples generated for Spanish
+2026-01-04 15:45:13,957 - INFO - Progress: 2000/2000 samples generated for Spanish
+2026-01-04 15:45:13,958 - INFO - Batch complete for Spanish: 2000 successful, 3 API failures, 0 validation failures
+2026-01-04 15:45:13,958 - INFO - Starting batch generation: 2000 samples for English
+2026-01-04 15:52:24,386 - INFO - Progress: 50/2000 samples generated for English
+2026-01-04 15:59:14,127 - INFO - Progress: 100/2000 samples generated for English
+2026-01-04 16:03:20,787 - ERROR - Error generating sample for English (attempt 125): Expecting value: line 1 column 1 (char 0)
+2026-01-04 16:06:55,048 - INFO - Progress: 150/2000 samples generated for English
+2026-01-04 16:14:14,995 - INFO - Progress: 200/2000 samples generated for English
+2026-01-04 16:21:43,531 - INFO - Progress: 250/2000 samples generated for English
+2026-01-04 16:28:43,187 - INFO - Progress: 300/2000 samples generated for English
+2026-01-04 16:35:53,972 - INFO - Progress: 350/2000 samples generated for English
+2026-01-04 16:43:03,552 - INFO - Progress: 400/2000 samples generated for English
+2026-01-04 16:50:13,944 - INFO - Progress: 450/2000 samples generated for English
+2026-01-04 16:57:18,035 - INFO - Progress: 500/2000 samples generated for English
+2026-01-04 17:03:57,009 - INFO - Progress: 550/2000 samples generated for English
+2026-01-04 17:11:26,256 - INFO - Progress: 600/2000 samples generated for English
+2026-01-04 17:18:52,972 - INFO - Progress: 650/2000 samples generated for English
+2026-01-04 17:25:55,574 - INFO - Progress: 700/2000 samples generated for English
+2026-01-04 17:33:37,558 - INFO - Progress: 750/2000 samples generated for English
+2026-01-04 17:41:05,032 - INFO - Progress: 800/2000 samples generated for English
+2026-01-04 17:48:20,926 - INFO - Progress: 850/2000 samples generated for English
+2026-01-04 17:56:12,653 - INFO - Progress: 900/2000 samples generated for English
+2026-01-04 18:03:55,601 - INFO - Progress: 950/2000 samples generated for English
+2026-01-04 18:10:45,367 - INFO - Progress: 1000/2000 samples generated for English
+2026-01-04 18:17:57,763 - INFO - Progress: 1050/2000 samples generated for English
+2026-01-04 18:24:54,219 - INFO - Progress: 1100/2000 samples generated for English
+2026-01-04 18:31:40,115 - INFO - Progress: 1150/2000 samples generated for English
+2026-01-04 18:38:38,336 - INFO - Progress: 1200/2000 samples generated for English
+2026-01-04 18:45:12,841 - INFO - Progress: 1250/2000 samples generated for English
+2026-01-04 18:52:19,015 - INFO - Progress: 1300/2000 samples generated for English
+2026-01-04 18:59:10,843 - INFO - Progress: 1350/2000 samples generated for English
+2026-01-04 19:05:52,026 - INFO - Progress: 1400/2000 samples generated for English
+2026-01-04 19:12:39,102 - INFO - Progress: 1450/2000 samples generated for English
+2026-01-04 19:19:56,223 - INFO - Progress: 1500/2000 samples generated for English
+2026-01-04 19:27:09,826 - INFO - Progress: 1550/2000 samples generated for English
+2026-01-04 19:34:03,712 - INFO - Progress: 1600/2000 samples generated for English
+2026-01-04 19:40:34,649 - INFO - Progress: 1650/2000 samples generated for English
+2026-01-04 19:47:24,121 - INFO - Progress: 1700/2000 samples generated for English
+2026-01-04 19:54:22,339 - INFO - Progress: 1750/2000 samples generated for English
+2026-01-04 20:01:13,087 - INFO - Progress: 1800/2000 samples generated for English
+2026-01-04 20:08:24,064 - INFO - Progress: 1850/2000 samples generated for English
+2026-01-04 20:15:32,840 - INFO - Progress: 1900/2000 samples generated for English
+2026-01-04 20:22:21,938 - INFO - Progress: 1950/2000 samples generated for English
+2026-01-04 20:29:48,798 - INFO - Progress: 2000/2000 samples generated for English
+2026-01-04 20:29:48,798 - INFO - Batch complete for English: 2000 successful, 1 API failures, 0 validation failures
+2026-01-04 20:29:48,798 - INFO - Starting batch generation: 2000 samples for Korean
+2026-01-04 20:38:49,297 - INFO - Progress: 50/2000 samples generated for Korean
+2026-01-04 20:47:09,710 - INFO - Progress: 100/2000 samples generated for Korean
+2026-01-04 20:55:19,871 - INFO - Progress: 150/2000 samples generated for Korean
+2026-01-04 21:04:31,826 - INFO - Progress: 200/2000 samples generated for Korean
+2026-01-04 21:12:48,242 - INFO - Progress: 250/2000 samples generated for Korean
+2026-01-04 21:21:48,425 - INFO - Progress: 300/2000 samples generated for Korean
+2026-01-04 21:29:58,063 - INFO - Progress: 350/2000 samples generated for Korean
+2026-01-04 21:38:41,617 - INFO - Progress: 400/2000 samples generated for Korean
+2026-01-04 21:47:19,603 - INFO - Progress: 450/2000 samples generated for Korean
+2026-01-04 21:55:35,166 - INFO - Progress: 500/2000 samples generated for Korean
+2026-01-04 22:04:06,457 - INFO - Progress: 550/2000 samples generated for Korean
+2026-01-04 22:12:52,515 - INFO - Progress: 600/2000 samples generated for Korean
+2026-01-04 22:21:46,469 - INFO - Progress: 650/2000 samples generated for Korean
+2026-01-04 22:30:18,037 - INFO - Progress: 700/2000 samples generated for Korean
+2026-01-04 22:38:29,371 - INFO - Progress: 750/2000 samples generated for Korean
+2026-01-04 22:47:09,950 - INFO - Progress: 800/2000 samples generated for Korean
+2026-01-04 22:55:26,160 - INFO - Progress: 850/2000 samples generated for Korean
+2026-01-04 23:03:57,420 - INFO - Progress: 900/2000 samples generated for Korean
+2026-01-04 23:12:11,911 - INFO - Progress: 950/2000 samples generated for Korean
+2026-01-04 23:20:55,549 - INFO - Progress: 1000/2000 samples generated for Korean
+2026-01-04 23:29:14,335 - INFO - Progress: 1050/2000 samples generated for Korean
+2026-01-04 23:37:33,039 - INFO - Progress: 1100/2000 samples generated for Korean
+2026-01-04 23:45:56,914 - INFO - Progress: 1150/2000 samples generated for Korean
+2026-01-04 23:54:59,020 - INFO - Progress: 1200/2000 samples generated for Korean
+2026-01-05 00:03:44,211 - INFO - Progress: 1250/2000 samples generated for Korean
+2026-01-05 00:12:01,650 - INFO - Progress: 1300/2000 samples generated for Korean
+2026-01-05 00:20:09,264 - INFO - Progress: 1350/2000 samples generated for Korean
+2026-01-05 00:28:39,464 - INFO - Progress: 1400/2000 samples generated for Korean
+2026-01-05 00:36:46,812 - INFO - Progress: 1450/2000 samples generated for Korean
+2026-01-05 00:45:24,936 - INFO - Progress: 1500/2000 samples generated for Korean
+2026-01-05 00:54:06,228 - INFO - Progress: 1550/2000 samples generated for Korean
+2026-01-05 01:02:19,140 - INFO - Progress: 1600/2000 samples generated for Korean
+2026-01-05 01:10:19,544 - INFO - Progress: 1650/2000 samples generated for Korean
+2026-01-05 01:18:57,944 - INFO - Progress: 1700/2000 samples generated for Korean
+2026-01-05 01:27:47,357 - INFO - Progress: 1750/2000 samples generated for Korean
+2026-01-05 01:36:03,949 - INFO - Progress: 1800/2000 samples generated for Korean
+2026-01-05 01:44:46,649 - INFO - Progress: 1850/2000 samples generated for Korean
+2026-01-05 01:53:42,341 - INFO - Progress: 1900/2000 samples generated for Korean
+2026-01-05 02:01:48,181 - INFO - Progress: 1950/2000 samples generated for Korean
+2026-01-05 02:09:58,847 - INFO - Progress: 2000/2000 samples generated for Korean
+2026-01-05 02:09:58,847 - INFO - Batch complete for Korean: 2000 successful, 0 API failures, 0 validation failures
+2026-01-05 02:09:58,847 - INFO - === Generation complete ===
+2026-01-05 02:09:58,847 - INFO - Total successful: 6000, Total failed: 4
+2026-01-05 02:09:58,848 - INFO - Time taken: 56310.68 seconds

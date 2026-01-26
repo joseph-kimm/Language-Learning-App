@@ -1,0 +1,292 @@
+import { GraphQLError } from 'graphql';
+import { withFilter } from 'graphql-subscriptions';
+import { v4 as uuidv4 } from 'uuid';
+import { Chat, Message, Sender } from '@/lib/mongodb_schema';
+import { GraphQLContext } from './context';
+import { pubsub, CHAT_EVENTS, ChatCreatedPayload, ChatUpdatedPayload, BotMessageChunkPayload } from '@/lib/pubsub/pubsub';
+import { generateBotResponse } from '@/utils/botResponseService';
+
+export const resolvers = {
+  Query: {
+    // Fetch chat by ID, returns null if not found
+    getChat: async (_parent: unknown, { chatId }: { chatId: string }, context: GraphQLContext) => {
+      try {
+        await context.connectToMongoDB();
+        const chat = await Chat.findOne({ chatId });
+
+        if (!chat) {
+          return null;
+        }
+
+        // Transform lastMessage if it exists (convert Date to ISO string)
+        const lastMessage = chat.lastMessage ? {
+          _id: chat.lastMessage._id,
+          chatId: chat.lastMessage.chatId,
+          sender: chat.lastMessage.sender,
+          text: chat.lastMessage.text,
+          timestamp: chat.lastMessage.timestamp.toISOString()
+        } : null;
+
+        return {
+          chatId: chat.chatId,
+          userId: chat.userId,
+          createdAt: chat.createdAt.toISOString(),
+          lastMessage
+        };
+      } catch (error) {
+        console.error('Error fetching chat:', error);
+        throw new GraphQLError('Failed to fetch chat', {
+          extensions: { code: 'DB_CONNECTION_ERROR' }
+        });
+      }
+    },
+
+    // Fetch all chats for a specific user with their last messages
+    getChats: async (_parent: unknown, { userId }: { userId?: string }, context: GraphQLContext) => {
+      try {
+        await context.connectToMongoDB();
+
+        // Use provided userId or default to mock user
+        const finalUserId = userId || 'mock-user-123';
+
+        // Query MongoDB for user's chats, newest first
+        const chats = await Chat.find({ userId: finalUserId })
+          .sort({ createdAt: -1 })
+          .lean();
+
+        // Transform to GraphQL response format
+        return chats.map(chat => ({
+          chatId: chat.chatId,
+          userId: chat.userId,
+          createdAt: chat.createdAt.toISOString(),
+          lastMessage: chat.lastMessage ? {
+            _id: chat.lastMessage._id,
+            chatId: chat.lastMessage.chatId,
+            sender: chat.lastMessage.sender,
+            text: chat.lastMessage.text,
+            timestamp: chat.lastMessage.timestamp.toISOString()
+          } : null
+        }));
+      } catch (error) {
+        console.error('Error fetching chats:', error);
+        throw new GraphQLError('Failed to fetch chats', {
+          extensions: { code: 'DB_CONNECTION_ERROR' }
+        });
+      }
+    },
+
+    // Fetch all messages for a specific chat, sorted by timestamp
+    getMessages: async (_parent: unknown, { chatId }: { chatId: string }, context: GraphQLContext) => {
+      try {
+        await context.connectToMongoDB();
+
+        // Verify chat exists
+        const chat = await Chat.findOne({ chatId });
+        if (!chat) {
+          throw new GraphQLError(`Chat with ID ${chatId} not found`, {
+            extensions: { code: 'CHAT_NOT_FOUND' }
+          });
+        }
+
+        // Fetch all messages for this chat, sorted by timestamp ascending
+        const messages = await Message.find({ chatId })
+          .sort({ timestamp: 1 })
+          .lean();
+
+        // Transform to GraphQL response format
+        return messages.map(msg => ({
+          _id: msg._id.toString(),
+          chatId: msg.chatId,
+          sender: msg.sender,
+          text: msg.text,
+          timestamp: msg.timestamp.toISOString()
+        }));
+      } catch (error) {
+        if (error instanceof GraphQLError) {
+          throw error;
+        }
+        console.error('Error fetching messages:', error);
+        throw new GraphQLError('Failed to fetch messages', {
+          extensions: { code: 'DB_CONNECTION_ERROR' }
+        });
+      }
+    }
+  },
+
+  Mutation: {
+    // Create new chat with generated UUID
+    createChat: async (_parent: unknown, { userId }: { userId?: string }, context: GraphQLContext) => {
+      try {
+        await context.connectToMongoDB();
+
+        const chatId = uuidv4();
+        const finalUserId = userId || 'mock-user-123';
+
+        const newChat = new Chat({
+          chatId,
+          userId: finalUserId,
+          createdAt: new Date(),
+          lastMessage: null  // No messages yet
+        });
+
+        await newChat.save();
+
+        // Prepare chat payload for return and subscription
+        const chatPayload = {
+          chatId: newChat.chatId,
+          userId: newChat.userId,
+          createdAt: newChat.createdAt.toISOString(),
+          lastMessage: null
+        };
+
+        // Publish CHAT_CREATED event
+        await pubsub.publish(CHAT_EVENTS.CHAT_CREATED, {
+          chatCreated: chatPayload
+        });
+
+        return chatPayload;
+      } catch (error) {
+        console.error('Error creating chat:', error);
+        throw new GraphQLError('Failed to create chat', {
+          extensions: { code: 'DB_CONNECTION_ERROR' }
+        });
+      }
+    },
+
+    // Add message to chat - creates Message document and updates Chat.lastMessage
+    addMessage: async (
+      _parent: unknown,
+      { chatId, sender, text }: { chatId: string; sender: string; text: string },
+      context: GraphQLContext
+    ) => {
+      try {
+        if (!text || text.trim().length === 0) {
+          throw new GraphQLError('Message text cannot be empty', {
+            extensions: { code: 'VALIDATION_ERROR' }
+          });
+        }
+
+        if (!chatId) {
+          throw new GraphQLError('chatId is required. Call createChat first.', {
+            extensions: { code: 'VALIDATION_ERROR' }
+          });
+        }
+
+        await context.connectToMongoDB();
+
+        // Verify chat exists
+        const chat = await Chat.findOne({ chatId });
+        if (!chat) {
+          throw new GraphQLError(`Chat with ID ${chatId} not found`, {
+            extensions: { code: 'CHAT_NOT_FOUND' }
+          });
+        }
+
+        // Create new Message document
+        const newMessage = new Message({
+          chatId,
+          sender: sender as Sender,
+          text: text.trim(),
+          timestamp: new Date()
+        });
+
+        await newMessage.save();
+
+        // Update Chat's lastMessage field (embedded copy for performance)
+        const lastMessageData = {
+          _id: newMessage._id.toString(),
+          chatId: newMessage.chatId,
+          sender: newMessage.sender,
+          text: newMessage.text,
+          timestamp: newMessage.timestamp
+        };
+
+        await Chat.findOneAndUpdate(
+          { chatId },
+          { lastMessage: lastMessageData }
+        );
+
+        // Fetch updated chat and publish CHAT_UPDATED event
+        const updatedChat = await Chat.findOne({ chatId }).lean();
+        if (updatedChat) {
+          await pubsub.publish(CHAT_EVENTS.CHAT_UPDATED, {
+            chatUpdated: {
+              chatId: updatedChat.chatId,
+              userId: updatedChat.userId,
+              createdAt: updatedChat.createdAt.toISOString(),
+              lastMessage: updatedChat.lastMessage ? {
+                _id: updatedChat.lastMessage._id,
+                chatId: updatedChat.lastMessage.chatId,
+                sender: updatedChat.lastMessage.sender,
+                text: updatedChat.lastMessage.text,
+                timestamp: updatedChat.lastMessage.timestamp.toISOString()
+              } : null
+            }
+          });
+        }
+
+        // If message is from USER, generate bot response in background
+        if (sender === Sender.USER) {
+          // Don't await - run in background
+          generateBotResponse(chatId, context).catch(err => {
+            console.error('[Bot Response Error]', err);
+          });
+        }
+
+        // Return the new message
+        return {
+          _id: newMessage._id.toString(),
+          chatId: newMessage.chatId,
+          sender: newMessage.sender,
+          text: newMessage.text,
+          timestamp: newMessage.timestamp.toISOString()
+        };
+      } catch (error) {
+        if (error instanceof GraphQLError) {
+          throw error;
+        }
+        console.error('Error adding message:', error);
+        throw new GraphQLError('Failed to add message', {
+          extensions: { code: 'UPDATE_FAILED' }
+        });
+      }
+    }
+  },
+
+  Subscription: {
+    // Subscribe to new chats created
+    chatCreated: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterableIterator(CHAT_EVENTS.CHAT_CREATED),
+        (payload: ChatCreatedPayload | undefined, variables: { userId: string } | undefined) => {
+          // Only send events for chats belonging to the subscribing user
+          return !!payload && !!variables && payload.chatCreated.userId === variables.userId;
+        }
+      )
+    },
+
+    // Subscribe to chat updates (lastMessage changes)
+    chatUpdated: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterableIterator(CHAT_EVENTS.CHAT_UPDATED),
+        (payload: ChatUpdatedPayload | undefined, variables: { userId: string } | undefined) => {
+          // Only send events for chats belonging to the subscribing user
+          return !!payload && !!variables && payload.chatUpdated.userId === variables.userId;
+        }
+      )
+    },
+
+    // Subscribe to bot message streaming chunks
+    botMessageStream: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterableIterator(CHAT_EVENTS.BOT_MESSAGE_CHUNK),
+        (payload: BotMessageChunkPayload | undefined, variables: { chatId: string; messageId: string } | undefined) => {
+          // Only send chunks for the specific message being streamed
+          return !!payload && !!variables &&
+                 payload.botMessageStream.chatId === variables.chatId &&
+                 payload.botMessageStream.messageId === variables.messageId;
+        }
+      )
+    }
+  }
+};

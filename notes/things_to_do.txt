@@ -1,0 +1,45 @@
+things to do for the weekend
+
+read bible
+determine how to do evaluation dataset
+
+EVALUATION PROCESS
+- test the training dataset on similarity
+- lets first finish training the model in kaggle
+- and then host it 
+
+- generate evaluation dataset
+- options 
+    - generate full conversations
+    - generate only user?
+    - generate a few back and forth and test only on one message
+
+EVALUATION
+- use langfuse platform to test perform LLM as a judge
+
+Read Papers 
+Reasoning with Language Model is Planning with World Model
+Chain-of-Thought Prompting Elicits Reasoning in Large Language Models
+ReAct: Synergizing Reasoning and Acting in Language Models
+Alpaca: A Strong, Replicable Instruction-Following Model
+Self-instruct: Aligning Language Models with Self-Generated Instructions
+
+Arxiv Papers
+Fast Inference from Transformers via Speculative Decoding
+Inference with Reference: Lossless Acceleration of Large Language Models
+Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads
+
+
+Self-consistency improves chain of thought reasoning in language models
+Plug-and-Play Compositional Reasoning with Large Language Models
+Training language models to follow instructions with human feedback (RLHF paper, InstructGPT)
+DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning
+Direct Preference Optimization: Your Language Model is Secretly a Reward Model (DPO)
+Voyager: An Open-Ended Embodied Agent with Large Language Models
+Scaling Instruction-Finetuned Language Models (finetuning CoT)
+The Llama 3 Herd of Models
+
+
+Later Question
+- how to create benchmark datasets?
+- 

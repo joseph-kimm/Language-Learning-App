@@ -1,0 +1,102 @@
+.sideNav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background-color: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.header {
+  padding: 20px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.newChatButton {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.newChatButton:hover {
+  background-color: #2563eb;
+}
+
+.newChatButton:active {
+  background-color: #1d4ed8;
+}
+
+.chatList {
+  display: flex;
+  flex-direction: column;
+}
+
+.statusMessage {
+  padding: 20px 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.errorMessage {
+  padding: 20px 16px;
+  text-align: center;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+/* Mobile backdrop */
+.backdrop {
+  display: none;
+}
+
+/* Mobile styles (<768px) */
+@media (max-width: 767px) {
+  .sideNav {
+    transform: translateX(-100%);
+  }
+
+  .sideNav.open {
+    transform: translateX(0);
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+}
+
+/* Desktop styles (≥768px) */
+@media (min-width: 768px) {
+  .sideNav {
+    transform: translateX(0);
+  }
+}

@@ -1,0 +1,179 @@
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 800px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.messagesContainer {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.welcomeMessage {
+  text-align: center;
+  color: #666;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.welcomeMessage p {
+  margin: 0.5rem 0;
+}
+
+.inputForm {
+  display: flex;
+  padding: 1rem;
+  border-top: 1px solid #e0e0e0;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+  outline: none;
+  font-family: inherit;
+  resize: none;
+  min-height: 50px;
+  max-height: 150px;
+  line-height: 1.5;
+  overflow-y: auto;
+  transition: height 0.1s ease;
+}
+
+.input:focus {
+  border-color: #4a90e2;
+}
+
+.sendButton {
+  padding: 0.75rem 1.5rem;
+  background: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  height: 50px;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+.sendButton:hover {
+  background: #357abd;
+}
+
+.sendButton:active {
+  background: #2868a8;
+}
+
+.micButton {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  border: none;
+  background: #4a90e2;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+.micButton:hover {
+  background: #357abd;
+}
+
+.micButton:active:not(.recording) {
+  background: #2868a8;
+  transform: scale(0.95);
+}
+
+.micButton.recording {
+  background: #ef4444;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.micButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  animation: none;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.errorMessage {
+  padding: 0.5rem 1rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin: 0 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+}
+
+@media (max-width: 768px) {
+  .chatContainer {
+    height: 500px;
+  }
+
+  .messagesContainer {
+    padding: 1rem;
+  }
+
+  .inputForm {
+    padding: 0.75rem;
+  }
+
+  .input,
+  .sendButton {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+
+  .micButton {
+    width: 50px;
+    height: 50px;
+    font-size: 1rem;
+  }
+}
