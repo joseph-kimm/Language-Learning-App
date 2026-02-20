@@ -7,6 +7,8 @@ import styles from './LanguageDropdown.module.css';
 
 interface LanguageDropdownProps {
   currentLanguage: TargetLanguage;
+  availableLanguages?: TargetLanguage[];
+  onLanguageChange?: (language: TargetLanguage) => void;
 }
 
 const getLanguageFlag = (lang: TargetLanguage): string => {
@@ -18,7 +20,7 @@ const getLanguageFlag = (lang: TargetLanguage): string => {
   return flags[lang];
 };
 
-export default function LanguageDropdown({ currentLanguage }: LanguageDropdownProps) {
+export default function LanguageDropdown({ currentLanguage, availableLanguages, onLanguageChange }: LanguageDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -62,10 +64,16 @@ export default function LanguageDropdown({ currentLanguage }: LanguageDropdownPr
 
       {isOpen && (
         <div className={styles.dropdownMenu}>
-          {(Object.values(TargetLanguage) as TargetLanguage[]).map((lang) => (
+          {(availableLanguages || Object.values(TargetLanguage) as TargetLanguage[]).map((lang) => (
             <div
               key={lang}
               className={`${styles.dropdownItem} ${lang === currentLanguage ? styles.active : ''}`}
+              onClick={() => {
+                if (onLanguageChange && lang !== currentLanguage) {
+                  onLanguageChange(lang);
+                }
+                setIsOpen(false);
+              }}
             >
               <Image
                 src={getLanguageFlag(lang)}

@@ -121,6 +121,10 @@ export interface SaveUserProfileData {
   saveUserProfile: IUserProfile;
 }
 
+export interface GetUserProfileData {
+  getUserProfile: IUserProfile | null;
+}
+
 // ============================================
 // Form types (UI state, not database entities)
 // ============================================

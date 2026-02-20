@@ -1,19 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useQuery } from '@apollo/client/react';
+import { gql } from 'graphql-tag';
 import { IoSettingsSharp } from 'react-icons/io5';
 import ChatInterface from '@/components/chat/ChatInterface';
 import SideNav from '@/components/navigation/SideNav';
 import HamburgerButton from '@/components/navigation/HamburgerButton';
 import LanguageDropdown from '@/components/chat/LanguageDropdown';
-import { TargetLanguage } from '@/types/survey';
+import { TargetLanguage, GetUserProfileData } from '@/types/survey';
 import styles from './page.module.css';
+
+const GET_USER_PROFILE_QUERY = gql`
+  query GetUserProfile($userId: ID!) {
+    getUserProfile(userId: $userId) {
+      userId
+      learningLanguages {
+        language
+      }
+    }
+  }
+`;
 
 export default function Home() {
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<TargetLanguage>(TargetLanguage.KOREAN);
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const { data: profileData } = useQuery<GetUserProfileData>(GET_USER_PROFILE_QUERY, {
+    variables: { userId: 'mock-user-123' },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const userLanguages = profileData?.getUserProfile?.learningLanguages?.map(
+    (lang) => lang.language
+  ) || [];
+
+  useEffect(() => {
+    if (userLanguages.length > 0) {
+      setSelectedLanguage(userLanguages[0]);
+    }
+  }, [profileData]);
 
   // Read chatId from URL params
   const chatId = searchParams.get('chat');
@@ -52,7 +81,11 @@ export default function Home() {
           <div className={styles.pageHeader}>
             <h1 className={styles.title}></h1>
             <div className={styles.headerRight}>
-              <LanguageDropdown currentLanguage={TargetLanguage.KOREAN} />
+              <LanguageDropdown
+                currentLanguage={selectedLanguage}
+                availableLanguages={userLanguages.length > 0 ? userLanguages : undefined}
+                onLanguageChange={setSelectedLanguage}
+              />
               <button
                 onClick={() => router.push('/profile')}
                 className={styles.settingsButton}

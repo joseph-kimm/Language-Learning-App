@@ -60,7 +60,7 @@ export const typeDefs = gql`
     userId: ID!
     createdAt: String!
     lastMessage: Message
-    language: Language
+    language: LearningLanguage
   }
 
   enum Sender {

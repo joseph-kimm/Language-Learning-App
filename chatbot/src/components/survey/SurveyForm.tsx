@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+
 import { gql } from 'graphql-tag';
-import { useMutation } from '@apollo/client/react';
+import { useMutation, useQuery } from '@apollo/client/react';
 import styles from './SurveyForm.module.css';
 import {
   TargetLanguage,
@@ -11,9 +11,9 @@ import {
   ProficiencyLevel,
   Interests,
   CorrectionStyle,
-  TargetLanguageData,
   TargetLanguageFormState,
   SaveUserProfileData,
+  GetUserProfileData,
   getLanguageLabel,
   getNativeLanguageLabel,
   getProficiencyLabel,
@@ -41,6 +41,24 @@ const SAVE_USER_PROFILE_MUTATION = gql`
   }
 `;
 
+const GET_USER_PROFILE_QUERY = gql`
+  query GetUserProfile($userId: ID!) {
+    getUserProfile(userId: $userId) {
+      userId
+      introduction
+      nativeLanguage
+      interests
+      additionalInterests
+      correctionStyle
+      learningLanguages {
+        language
+        proficiencyLevel
+        learningGoals
+      }
+    }
+  }
+`;
+
 const createEmptyLanguageEntry = (): TargetLanguageFormState => ({
   targetLanguage: '',
   proficiencyLevel: '',
@@ -48,8 +66,17 @@ const createEmptyLanguageEntry = (): TargetLanguageFormState => ({
 });
 
 export default function SurveyForm() {
-  const router = useRouter();
-  const [saveUserProfile, { loading, error }] = useMutation<SaveUserProfileData>(SAVE_USER_PROFILE_MUTATION);
+  const [saveUserProfile, { loading, error }] = useMutation<SaveUserProfileData>(
+    SAVE_USER_PROFILE_MUTATION,
+    { refetchQueries: ['GetUserProfile'] }
+  );
+  const { data: profileData, loading: profileLoading } = useQuery<GetUserProfileData>(
+    GET_USER_PROFILE_QUERY,
+    {
+      variables: { userId: 'mock-user-123' },
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
   // User section state
   const [introduction, setIntroduction] = useState<string>('');
@@ -57,11 +84,34 @@ export default function SurveyForm() {
   const [additionalInterests, setAdditionalInterests] = useState<string>('');
   const [nativeLanguage, setNativeLanguage] = useState<string>('');
   const [correctionStyle, setCorrectionStyle] = useState<string>('');
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Languages section state
   const [targetLanguages, setTargetLanguages] = useState<TargetLanguageFormState[]>([
     createEmptyLanguageEntry()
   ]);
+
+  // Populate form with existing profile data when loaded
+  useEffect(() => {
+    const profile = profileData?.getUserProfile;
+    if (!profile) return;
+
+    setIntroduction(profile.introduction || '');
+    setInterests(profile.interests);
+    setAdditionalInterests(profile.additionalInterests.join(', '));
+    setNativeLanguage(profile.nativeLanguage);
+    setCorrectionStyle(profile.correctionStyle);
+
+    if (profile.learningLanguages.length > 0) {
+      setTargetLanguages(
+        profile.learningLanguages.map((lang) => ({
+          targetLanguage: lang.language,
+          proficiencyLevel: lang.proficiencyLevel,
+          learningGoals: lang.learningGoals,
+        }))
+      );
+    }
+  }, [profileData]);
 
   const handleInterestToggle = (interest: Interests) => {
     setInterests(prev =>
@@ -177,7 +227,8 @@ export default function SurveyForm() {
 
       if (result.data?.saveUserProfile) {
         console.log('Profile saved:', result.data.saveUserProfile);
-        router.push('/');
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
       }
     } catch (err) {
       console.error('Error saving profile:', err);
@@ -389,12 +440,18 @@ export default function SurveyForm() {
           </div>
         )}
 
+        {saveSuccess && (
+          <div className={styles.successMessage}>
+            Profile saved successfully!
+          </div>
+        )}
+
         <button
           type="submit"
           className={styles.submitButton}
-          disabled={loading}
+          disabled={loading || profileLoading}
         >
-          {loading ? 'Saving...' : 'Complete Profile'}
+          {loading ? 'Saving...' : profileLoading ? 'Loading...' : 'Save Profile'}
         </button>
       </form>
     </div>
