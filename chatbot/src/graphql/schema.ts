@@ -9,8 +9,9 @@ export const typeDefs = gql`
   }
 
   type Mutation {
-    createChat(userId: ID): Chat
+    createChat(userId: ID, language: TargetLanguage!, personality: Personality): Chat
     addMessage(chatId: ID!, sender: Sender!, text: String!): Message
+    regenerateResponse(chatId: ID!, messageId: ID!): Message
     saveUserProfile(input: UserProfileInput!): UserProfile!
   }
 
@@ -60,7 +61,8 @@ export const typeDefs = gql`
     userId: ID!
     createdAt: String!
     lastMessage: Message
-    language: LearningLanguage
+    language: TargetLanguage
+    personality: Personality
   }
 
   enum Sender {
@@ -70,6 +72,14 @@ export const typeDefs = gql`
 
   type User {
     userId: ID!
+  }
+
+  enum Personality {
+    DEFAULT
+    CALM
+    CURIOUS
+    HYPE
+    PLAYFUL
   }
 
   #for user preference

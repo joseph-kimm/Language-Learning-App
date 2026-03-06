@@ -35,6 +35,15 @@
   cursor: not-allowed;
 }
 
+/* Playing state - stop button */
+.playing {
+  background: #ef4444;
+}
+
+.playing:hover {
+  background: #dc2626;
+}
+
 /* Position for bot messages (button on right of bubble) */
 .botMessage {
   left: calc(100% + 8px);

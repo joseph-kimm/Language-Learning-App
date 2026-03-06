@@ -5,40 +5,14 @@ const LLM_CONFIG = {
   endpointUrl: 'https://josephjiminkim--language-chatbot-transformers-web-app.modal.run/v1/chat/completions',
   temperature: 0.7,
   maxTokens: 100,
-  systemPrompt: `
-  [INSTRUCTIONS]
-  You are a Korean conversational partner for language learners.
-  Respond always in Korean.
-  Respond with short sentences.
-  Keep conversation natural.
-
-  PRIORITY:
-  1. Match user proficiency level
-  2. Prefer user interests
-  3. Follow correction preference
-
-
-  [USER_PROFILE]
-  level: advanced
-
-  learning goal: to understand Kpop songs and K-Dramas
-
-  topics of interest:
-   - Food
-   - Music
-   - Entertainment
-   - Travel
-
-  correction style:
-   - always correct me
-  `,
 };
 
 export async function* generateBotResponseStream(
-  conversationHistory: ConversationMessage[] = []
+  conversationHistory: ConversationMessage[] = [],
+  systemPrompt: string
 ): AsyncGenerator<string, void, unknown> {
   const messages = [
-    { role: 'system', content: LLM_CONFIG.systemPrompt },
+    { role: 'system', content: systemPrompt },
     ...conversationHistory
   ];
 

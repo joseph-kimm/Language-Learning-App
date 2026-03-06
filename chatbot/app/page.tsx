@@ -74,6 +74,7 @@ export default function Home() {
         onClose={closeNav}
         selectedChatId={chatId}
         onChatSelect={handleChatSelect}
+        language={selectedLanguage}
       />
 
       <main className={styles.main}>
@@ -84,7 +85,10 @@ export default function Home() {
               <LanguageDropdown
                 currentLanguage={selectedLanguage}
                 availableLanguages={userLanguages.length > 0 ? userLanguages : undefined}
-                onLanguageChange={setSelectedLanguage}
+                onLanguageChange={(lang) => {
+                  setSelectedLanguage(lang);
+                  router.push('/');
+                }}
               />
               <button
                 onClick={() => router.push('/profile')}
@@ -95,7 +99,7 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <ChatInterface chatId={chatId} onChatCreated={handleChatCreated} />
+          <ChatInterface chatId={chatId} onChatCreated={handleChatCreated} language={selectedLanguage} />
         </div>
       </main>
     </div>

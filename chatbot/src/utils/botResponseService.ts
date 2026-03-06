@@ -1,10 +1,24 @@
-import { Chat, Message, Sender } from '@/lib/mongodb/mongodb_schema';
+import { Chat, Message, Sender, UserProfile } from '@/lib/mongodb/mongodb_schema';
 import { pubsub, CHAT_EVENTS } from '@/lib/pubsub/pubsub';
 import { generateBotResponseStream } from '@/utils/huggingFaceLLM';
+import { buildSystemPrompt } from '@/utils/prompts';
 import type { ConversationMessage } from '@/types/llm';
 import type { GraphQLContext } from '@/graphql/context';
+import { Personality } from '@/types/chat';
+import {
+  TargetLanguage,
+  Interests,
+  getLanguageLabel,
+  getProficiencyLabel,
+  getInterestLabel,
+  getCorrectionStyleLabel
+} from '@/types/survey';
 
-const FALLBACK_MESSAGE = "Lo siento, estoy teniendo problemas técnicos. Por favor, inténtalo de nuevo.";
+const FALLBACK_MESSAGES: Record<string, string> = {
+  [TargetLanguage.ENGLISH]: "Sorry, I'm having technical issues. Please try again.",
+  [TargetLanguage.KOREAN]: "죄송합니다. 기술적인 문제가 있습니다. 다시 시도해 주세요.",
+  [TargetLanguage.SPANISH]: "Lo siento, estoy teniendo problemas técnicos. Por favor, inténtalo de nuevo.",
+};
 
 /**
  * Background function to generate bot response with streaming
@@ -15,6 +29,31 @@ export async function generateBotResponse(
 ): Promise<void> {
   try {
     await context.connectToMongoDB();
+
+    // Fetch the chat to get language and userId
+    const chat = await Chat.findOne({ chatId }).lean();
+    if (!chat) return;
+
+    const targetLanguage = chat.language as TargetLanguage;
+    const languageName = getLanguageLabel(targetLanguage);
+
+    // Fetch user profile to build dynamic prompt
+    const profile = await UserProfile.findOne({ userId: chat.userId }).lean();
+
+    // Find the matching language entry in the profile
+    const langEntry = profile?.learningLanguages?.find(
+      (l: { language: string }) => l.language === targetLanguage
+    );
+
+    const systemPrompt = buildSystemPrompt({
+      languageName,
+      proficiencyLevel: langEntry ? getProficiencyLabel(langEntry.proficiencyLevel) : 'intermediate',
+      learningGoals: langEntry?.learningGoals || 'general conversation',
+      interests: profile?.interests?.map((i: string) => getInterestLabel(i as Interests)) || ['Daily Life'],
+      correctionStyle: profile ? getCorrectionStyleLabel(profile.correctionStyle) : 'Always correct me',
+      personality: (chat.personality as Personality) || Personality.DEFAULT,
+      introduction: profile?.introduction,
+    });
 
     // Fetch last 10 messages for conversation context (includes the just-added user message)
     const recentMessages = await Message.find({ chatId })
@@ -45,7 +84,7 @@ export async function generateBotResponse(
 
     try {
       // Stream LLM response
-      for await (const chunk of generateBotResponseStream(conversationHistory)) {
+      for await (const chunk of generateBotResponseStream(conversationHistory, systemPrompt)) {
         accumulatedText += chunk;
 
         // Publish chunk to subscribers
@@ -81,7 +120,8 @@ export async function generateBotResponse(
       });
 
       // Use fallback message on error
-      botMessage.text = FALLBACK_MESSAGE;
+      const fallback = FALLBACK_MESSAGES[targetLanguage] || FALLBACK_MESSAGES[TargetLanguage.ENGLISH];
+      botMessage.text = fallback;
       await botMessage.save();
 
       // Send completion with fallback
@@ -89,7 +129,7 @@ export async function generateBotResponse(
         botMessageStream: {
           messageId: botMessageId,
           chatId,
-          chunk: FALLBACK_MESSAGE,
+          chunk: fallback,
           isComplete: true
         }
       });
@@ -116,6 +156,7 @@ export async function generateBotResponse(
         chatUpdated: {
           chatId: updatedChat.chatId,
           userId: updatedChat.userId,
+          language: updatedChat.language,
           createdAt: updatedChat.createdAt.toISOString(),
           lastMessage: updatedChat.lastMessage ? {
             _id: updatedChat.lastMessage._id,

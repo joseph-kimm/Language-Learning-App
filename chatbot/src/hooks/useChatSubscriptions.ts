@@ -14,6 +14,7 @@ const CHAT_CREATED_SUBSCRIPTION = gql`
       chatId
       userId
       createdAt
+      language
       lastMessage {
         _id
         chatId
@@ -31,6 +32,7 @@ const CHAT_UPDATED_SUBSCRIPTION = gql`
       chatId
       userId
       createdAt
+      language
       lastMessage {
         _id
         chatId

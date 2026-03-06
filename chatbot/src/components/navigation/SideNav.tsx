@@ -5,6 +5,7 @@ import { gql } from 'graphql-tag';
 import styles from './SideNav.module.css';
 import ChatListItem from './ChatListItem';
 import { IChat } from '@/types/chat';
+import { TargetLanguage } from '@/types/survey';
 import { useChatSubscriptions } from '@/hooks/useChatSubscriptions';
 
 interface SideNavProps {
@@ -12,6 +13,7 @@ interface SideNavProps {
   onClose: () => void;
   selectedChatId: string | null;
   onChatSelect: (chatId: string | null) => void;
+  language: TargetLanguage;
 }
 
 interface GetChatsData {
@@ -23,6 +25,8 @@ const GET_CHATS_QUERY = gql`
     getChats(userId: $userId) {
       chatId
       createdAt
+      language
+      personality
       lastMessage {
         text
         timestamp
@@ -31,7 +35,7 @@ const GET_CHATS_QUERY = gql`
   }
 `;
 
-export default function SideNav({ isOpen, onClose, selectedChatId, onChatSelect }: SideNavProps) {
+export default function SideNav({ isOpen, onClose, selectedChatId, onChatSelect, language }: SideNavProps) {
   const { data, loading, error } = useQuery<GetChatsData>(GET_CHATS_QUERY, {
     variables: { userId: undefined }, // Uses default 'mock-user-123'
   });
@@ -40,6 +44,11 @@ export default function SideNav({ isOpen, onClose, selectedChatId, onChatSelect 
   useChatSubscriptions({
     userId: undefined, // Uses default 'mock-user-123'
   });
+
+  // Filter chats by selected language
+  const filteredChats = data?.getChats.filter(
+    (chat) => chat.language === language
+  ) || [];
 
   // Handle chat item click
   const handleChatClick = (chatId: string) => {
@@ -97,11 +106,11 @@ export default function SideNav({ isOpen, onClose, selectedChatId, onChatSelect 
             </div>
           )}
 
-          {!loading && !error && data?.getChats.length === 0 && (
+          {!loading && !error && filteredChats.length === 0 && (
             <div className={styles.statusMessage}>No chats yet</div>
           )}
 
-          {!loading && !error && data?.getChats.map((chat: IChat) => (
+          {!loading && !error && filteredChats.map((chat: IChat) => (
             <ChatListItem
               key={chat.chatId}
               chat={chat}

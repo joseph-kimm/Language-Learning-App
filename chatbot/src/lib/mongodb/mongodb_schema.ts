@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Sender, IMessageDoc, IChatDoc, IUserDoc } from '@/types/chat';
+import { Sender, Personality, IMessageDoc, IChatDoc, IUserDoc } from '@/types/chat';
 import { IUserProfileDoc, NativeLanguage, Interests, CorrectionStyle, TargetLanguage, ProficiencyLevel } from '@/types/survey';
 
 /**
@@ -46,6 +46,8 @@ MessageSchema.index({ chatId: 1, timestamp: 1 });
 const ChatSchema = new Schema<IChatDocument>({
   chatId: { type: String, required: true, unique: true },
   userId: { type: String, required: true, index: true },
+  language: { type: String, enum: Object.values(TargetLanguage), required: true },
+  personality: { type: String, enum: Object.values(Personality), default: 'DEFAULT' },
   createdAt: { type: Date, default: Date.now },
   // lastMessage stored as embedded object (not reference) for performance
   lastMessage: {

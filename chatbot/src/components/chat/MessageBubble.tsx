@@ -14,6 +14,9 @@ interface MessageBubbleProps {
   messageId?: string; // For streaming bot responses
   chatId?: string; // For streaming bot responses
   isStreaming?: boolean; // Whether this message is currently streaming
+  language: string; // BCP-47 language code for TTS
+  isLastBotMessage?: boolean; // Whether this is the last bot message (for regenerate)
+  onRegenerate?: () => void; // Callback to regenerate bot response
 }
 
 /**
@@ -21,7 +24,7 @@ interface MessageBubbleProps {
  * Styles differently based on sender (user right-aligned blue, bot left-aligned gray)
  * Includes TTS functionality - click message to show TTS button
  */
-export default function MessageBubble({ sender, text, timestamp, messageId, chatId, isStreaming: initialStreaming }: MessageBubbleProps) {
+export default function MessageBubble({ sender, text, timestamp, messageId, chatId, isStreaming: initialStreaming, language, isLastBotMessage, onRegenerate }: MessageBubbleProps) {
   const [showTTS, setShowTTS] = useState(false);
   const bubbleRef = useRef<HTMLDivElement>(null);
   const isUser = sender === Sender.USER;
@@ -85,10 +88,23 @@ export default function MessageBubble({ sender, text, timestamp, messageId, chat
               text={displayText}
               isUser={isUser}
               onHide={() => setShowTTS(false)}
+              language={language}
             />
           )}
         </div>
+
       </div>
+
+      {isLastBotMessage && !isCurrentlyStreaming && onRegenerate && (
+        <button
+          className={styles.regenerateButton}
+          onClick={onRegenerate}
+          aria-label="Regenerate response"
+          title="Regenerate response"
+        >
+          ↻
+        </button>
+      )}
     </div>
   );
 }

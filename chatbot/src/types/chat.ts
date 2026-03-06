@@ -3,9 +3,19 @@
  * Safe to import in both client and server components (no Node.js dependencies)
  */
 
+import { TargetLanguage } from '@/types/survey';
+
 export enum Sender {
   USER = 'USER',
   BOT = 'BOT'
+}
+
+export enum Personality {
+  DEFAULT = 'DEFAULT',
+  CALM = 'CALM',
+  CURIOUS = 'CURIOUS',
+  HYPE = 'HYPE',
+  PLAYFUL = 'PLAYFUL'
 }
 
 // Client-side interfaces (GraphQL responses - timestamps as ISO strings)
@@ -22,6 +32,8 @@ export interface IChat {
   userId: string;
   createdAt: string;
   lastMessage: IMessage | null;  // Last message in the chat (can be null for new chats)
+  language: TargetLanguage;
+  personality?: Personality;
 }
 
 export interface IUser {
@@ -41,6 +53,8 @@ export interface IMessageDoc {
 export interface IChatDoc {
   chatId: string;
   userId: string;
+  language: TargetLanguage;
+  personality?: Personality;
   createdAt: Date;
   lastMessage?: {
     _id: string;
@@ -65,6 +79,10 @@ export interface CreateChatData {
 
 export interface AddMessageData {
   addMessage: IMessage;
+}
+
+export interface RegenerateResponseData {
+  regenerateResponse: IMessage;
 }
 
 // GraphQL query response types

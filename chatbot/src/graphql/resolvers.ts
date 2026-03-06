@@ -30,6 +30,7 @@ export const resolvers = {
         return {
           chatId: chat.chatId,
           userId: chat.userId,
+          personality: chat.personality || 'DEFAULT',
           createdAt: chat.createdAt.toISOString(),
           lastMessage
         };
@@ -58,6 +59,8 @@ export const resolvers = {
         return chats.map(chat => ({
           chatId: chat.chatId,
           userId: chat.userId,
+          language: chat.language,
+          personality: chat.personality || 'DEFAULT',
           createdAt: chat.createdAt.toISOString(),
           lastMessage: chat.lastMessage ? {
             _id: chat.lastMessage._id,
@@ -144,7 +147,7 @@ export const resolvers = {
 
   Mutation: {
     // Create new chat with generated UUID
-    createChat: async (_parent: unknown, { userId }: { userId?: string }, context: GraphQLContext) => {
+    createChat: async (_parent: unknown, { userId, language, personality }: { userId?: string; language: string; personality?: string }, context: GraphQLContext) => {
       try {
         await context.connectToMongoDB();
 
@@ -154,6 +157,8 @@ export const resolvers = {
         const newChat = new Chat({
           chatId,
           userId: finalUserId,
+          language,
+          personality: personality || 'DEFAULT',
           createdAt: new Date(),
           lastMessage: null  // No messages yet
         });
@@ -164,6 +169,8 @@ export const resolvers = {
         const chatPayload = {
           chatId: newChat.chatId,
           userId: newChat.userId,
+          language: newChat.language,
+          personality: newChat.personality,
           createdAt: newChat.createdAt.toISOString(),
           lastMessage: null
         };
@@ -242,6 +249,8 @@ export const resolvers = {
             chatUpdated: {
               chatId: updatedChat.chatId,
               userId: updatedChat.userId,
+              language: updatedChat.language,
+              personality: updatedChat.personality || 'DEFAULT',
               createdAt: updatedChat.createdAt.toISOString(),
               lastMessage: updatedChat.lastMessage ? {
                 _id: updatedChat.lastMessage._id,
@@ -276,6 +285,51 @@ export const resolvers = {
         }
         console.error('Error adding message:', error);
         throw new GraphQLError('Failed to add message', {
+          extensions: { code: 'UPDATE_FAILED' }
+        });
+      }
+    },
+
+    // Regenerate bot response: deletes the existing bot message and triggers a new one
+    regenerateResponse: async (
+      _parent: unknown,
+      { chatId, messageId }: { chatId: string; messageId: string },
+      context: GraphQLContext
+    ) => {
+      try {
+        await context.connectToMongoDB();
+
+        // Find and delete the existing bot message
+        const existingMessage = await Message.findOneAndDelete({
+          _id: messageId,
+          chatId,
+          sender: Sender.BOT
+        }).lean();
+
+        if (!existingMessage) {
+          throw new GraphQLError('Bot message not found', {
+            extensions: { code: 'NOT_FOUND' }
+          });
+        }
+
+        // Trigger new bot response in background (reuses existing pipeline)
+        generateBotResponse(chatId, context).catch(err => {
+          console.error('[Regenerate Bot Response Error]', err);
+        });
+
+        return {
+          _id: existingMessage._id.toString(),
+          chatId: existingMessage.chatId,
+          sender: existingMessage.sender,
+          text: existingMessage.text,
+          timestamp: existingMessage.timestamp.toISOString()
+        };
+      } catch (error) {
+        if (error instanceof GraphQLError) {
+          throw error;
+        }
+        console.error('Error regenerating response:', error);
+        throw new GraphQLError('Failed to regenerate response', {
           extensions: { code: 'UPDATE_FAILED' }
         });
       }

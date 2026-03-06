@@ -1,7 +1,7 @@
 .chatContainer {
   display: flex;
   flex-direction: column;
-  height: 800px;
+  height: calc(100vh - 10rem);
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -154,7 +154,7 @@
 
 @media (max-width: 768px) {
   .chatContainer {
-    height: 500px;
+    height: calc(100vh - 8rem);
   }
 
   .messagesContainer {

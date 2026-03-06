@@ -35,9 +35,13 @@ def download_adapters():
     )
 
 
+# Bump this to force a full image + snapshot rebuild
+IMAGE_VERSION = "v2"
+
 # Define the image with CUDA PyTorch for GPU inference
 image = (
     modal.Image.debian_slim(python_version="3.10")
+    .env({"IMAGE_VERSION": IMAGE_VERSION})
     .pip_install(
         "torch",
         "transformers",
@@ -49,12 +53,13 @@ image = (
     )
     .run_function(download_model)
     .run_function(download_adapters)
-)  
+)
 
 # Adapter configurations (set to None to disable)
 ADAPTERS = {
     "English": "English", 
-    "Korean": "Korean"  
+    "Korean": "Korean",
+    "Spanish": "Spanish"  
 }
 DEFAULT_MODEL = "base"
 
@@ -65,15 +70,16 @@ MODEL_PATH = f"{MODEL_DIR}/base"
 @app.cls(
     image=image,
     gpu="L4",
-    memory=16384,  # 16GB system RAM
+    memory=8192,  # 8GB system RAM
     scaledown_window=300,  # Keep warm for 5 minutes
+    enable_memory_snapshot=True,
+    experimental_options={"enable_gpu_snapshot": True},
 )
 class Model:
-    @modal.enter()
-    def setup(self):
-        """Load base model and adapters when container starts."""
+    @modal.enter(snap=True)
+    def load_base(self):
+        """Load only the base model + tokenizer — this gets snapshotted."""
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-        from peft import PeftModel
         import torch
         import time
 
@@ -96,9 +102,14 @@ class Model:
             device_map="auto",
         )
         print(f"Base model loaded in {time.time() - start:.2f}s")
-
-        # Load adapters (pre-downloaded during image build)
         self.models = {"base": self.base_model}
+
+    @modal.enter()
+    def on_restore(self):
+        """After restore: load lightweight adapters + warmup."""
+        from peft import PeftModel
+        import time
+
         for adapter_name, adapter_path in ADAPTERS.items():
             adapter_full_path = os.path.join(MODEL_DIR, "adapters", adapter_path)
             if os.path.exists(adapter_full_path):
@@ -112,12 +123,9 @@ class Model:
             else:
                 print(f"Adapter not found: {adapter_full_path}, skipping...")
 
-        # Warmup
-        print("Warming up models...")
-        for model_name in self.models:
-            start = time.time()
-            self._generate_text(model_name, "Hi", max_new_tokens=1)
-            print(f"{model_name} warmup complete in {time.time() - start:.2f}s")
+        # Quick warmup
+        self._generate_text("base", "Hi", max_new_tokens=1)
+        print("Container restored and ready to serve.")
 
     def _get_model(self, model_name: str):
         """Get model by name, fallback to base."""

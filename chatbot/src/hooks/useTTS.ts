@@ -31,7 +31,7 @@ export interface UseTTSReturn {
  *
  * @returns Object with speak, stop functions and state
  */
-export function useTTS(): UseTTSReturn {
+export function useTTS(language: string): UseTTSReturn {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -56,9 +56,9 @@ export function useTTS(): UseTTSReturn {
     // Create new utterance
     const utterance = new SpeechSynthesisUtterance(text);
 
-    // Detect and set language
-    const language = detectLanguage(text);
-    utterance.lang = language;
+    // Use explicit language if provided, otherwise auto-detect
+    utterance.lang = language || detectLanguage(text);
+    console.log(utterance.lang)
 
     // Set up event handlers
     utterance.onstart = () => {
@@ -82,7 +82,7 @@ export function useTTS(): UseTTSReturn {
     // Store and start utterance
     currentUtterance = utterance;
     speechSynthesis.speak(utterance);
-  }, [isSupported]);
+  }, [isSupported, language]);
 
   /**
    * Stops current speech playback

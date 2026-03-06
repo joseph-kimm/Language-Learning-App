@@ -6,7 +6,9 @@
   height: 100vh;
   background-color: #ffffff;
   border-right: 1px solid #e5e7eb;
-  overflow-y: auto;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
   z-index: 1000;
   transition: transform 0.3s ease;
 }
@@ -51,6 +53,8 @@
 .chatList {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .statusMessage {

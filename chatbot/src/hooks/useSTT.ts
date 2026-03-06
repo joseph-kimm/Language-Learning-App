@@ -35,7 +35,7 @@ export interface UseSpeechToTextReturn {
  *
  * @returns Object with recording controls and state
  */
-export function useSpeechToText(): UseSpeechToTextReturn {
+export function useSTT(language: string): UseSpeechToTextReturn {
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -59,13 +59,13 @@ export function useSpeechToText(): UseSpeechToTextReturn {
     const recognition = new SpeechRecognitionClass();
 
     // Configure recognition
-    recognition.lang = 'es-ES'; // Spanish (Spain)
+    recognition.lang = language;
     recognition.continuous = false; // Stop after one phrase
     recognition.interimResults = true; // Show real-time results
     recognition.maxAlternatives = 1; // Single best result
 
     return recognition;
-  }, [SpeechRecognitionClass]);
+  }, [SpeechRecognitionClass, language]);
 
   /**
    * Start speech recognition
