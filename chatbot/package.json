@@ -14,9 +14,10 @@
     "@apollo/client": "^4.0.9",
     "@apollo/server": "^5.2.0",
     "@as-integrations/next": "^4.1.0",
+    "@auth/mongodb-adapter": "^3.11.1",
     "@graphql-tools/schema": "^10.0.30",
     "@huggingface/inference": "^4.13.5",
-    "@prisma/client": "^7.0.1",
+    "bcryptjs": "^3.0.3",
     "dataloader": "^2.2.3",
     "franc-min": "^6.2.0",
     "graphql": "^16.12.0",
@@ -25,18 +26,19 @@
     "graphql-tag": "^2.12.6",
     "mongoose": "^9.0.0",
     "next": "^16.0.6",
+    "next-auth": "5.0.0-beta.30",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/dom-speech-recognition": "^0.0.7",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@types/uuid": "^11.0.0",
-    "prisma": "^7.0.1",
     "typescript": "^5.9.3"
   }
 }

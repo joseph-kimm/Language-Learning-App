@@ -10,7 +10,7 @@ MODEL_NAME="Qwen/Qwen2.5-7B-Instruct"
 model_name_for_repo = MODEL_NAME.split('/')[-1]
 OUTPUT_REPO = f"jiminaa/{model_name_for_repo}-language-QLoRA"
 
-files = ["English", "Korean"]
+files = ["English", "Korean", "Spanish"]
 
 for file in files:
     try:

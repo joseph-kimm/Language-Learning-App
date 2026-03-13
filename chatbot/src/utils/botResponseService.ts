@@ -84,7 +84,7 @@ export async function generateBotResponse(
 
     try {
       // Stream LLM response
-      for await (const chunk of generateBotResponseStream(conversationHistory, systemPrompt)) {
+      for await (const chunk of generateBotResponseStream(conversationHistory, systemPrompt, targetLanguage)) {
         accumulatedText += chunk;
 
         // Publish chunk to subscribers

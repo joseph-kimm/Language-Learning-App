@@ -1,7 +1,7 @@
 import type { ConversationMessage } from "@/types/llm";
+import { TargetLanguage } from "@/types/survey";
 
 const LLM_CONFIG = {
-  model: "Base",
   endpointUrl: 'https://josephjiminkim--language-chatbot-transformers-web-app.modal.run/v1/chat/completions',
   temperature: 0.7,
   maxTokens: 100,
@@ -9,7 +9,8 @@ const LLM_CONFIG = {
 
 export async function* generateBotResponseStream(
   conversationHistory: ConversationMessage[] = [],
-  systemPrompt: string
+  systemPrompt: string,
+  language: TargetLanguage
 ): AsyncGenerator<string, void, unknown> {
   const messages = [
     { role: 'system', content: systemPrompt },
@@ -23,7 +24,7 @@ export async function* generateBotResponseStream(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: LLM_CONFIG.model,
+        model: language,
         messages: messages,
         temperature: LLM_CONFIG.temperature,
         max_tokens: LLM_CONFIG.maxTokens,

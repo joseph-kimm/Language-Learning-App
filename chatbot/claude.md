@@ -7,15 +7,13 @@
 - **Styling**: CSS Modules
 - **API**: GraphQL (Apollo Server/Client)
 - **Real-time**: Server-Sent Events (SSE)
-- **Databases**: PostgreSQL 15+ (Supabase + Prisma), MongoDB 7+ (Mongoose + Atlas)
+- **Databases**: MongoDB 7+ (Mongoose + Atlas)
 
 ## Architecture
 
 ### Database Strategy
-**PostgreSQL (Supabase + Prisma)**:
-- User authentication only (email, password hash, userId)
-
 **MongoDB (Atlas + Mongoose)**:
+- User authentication (email, password hash, userId)
 - User profiles
 - Learning progress and history
 - Chat conversations and transcripts

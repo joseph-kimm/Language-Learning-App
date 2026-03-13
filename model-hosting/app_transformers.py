@@ -36,9 +36,10 @@ def download_adapters():
 
 
 # Bump this to force a full image + snapshot rebuild
-IMAGE_VERSION = "v2"
+IMAGE_VERSION = "v3"
 
 # Define the image with CUDA PyTorch for GPU inference
+# creating an Docker container
 image = (
     modal.Image.debian_slim(python_version="3.10")
     .env({"IMAGE_VERSION": IMAGE_VERSION})
@@ -57,16 +58,16 @@ image = (
 
 # Adapter configurations (set to None to disable)
 ADAPTERS = {
-    "English": "English", 
-    "Korean": "Korean",
-    "Spanish": "Spanish"  
+    "ENGLISH": "English",
+    "KOREAN": "Korean",
+    "SPANISH": "Spanish",
 }
 DEFAULT_MODEL = "base"
 
 # Local path for the pre-downloaded model
 MODEL_PATH = f"{MODEL_DIR}/base"
 
-
+# modal class with specification
 @app.cls(
     image=image,
     gpu="L4",
@@ -74,12 +75,19 @@ MODEL_PATH = f"{MODEL_DIR}/base"
     scaledown_window=300,  # Keep warm for 5 minutes
     enable_memory_snapshot=True,
     experimental_options={"enable_gpu_snapshot": True},
+    max_containers=3
 )
+
 class Model:
+
+    # runs only the first time
+    # then saves a snapshot
     @modal.enter(snap=True)
     def load_base(self):
-        """Load only the base model + tokenizer — this gets snapshotted."""
+        
+        """Load base model, tokenizer, and all adapters — everything gets snapshotted."""
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+        from peft import PeftModel
         import torch
         import time
 
@@ -102,55 +110,80 @@ class Model:
             device_map="auto",
         )
         print(f"Base model loaded in {time.time() - start:.2f}s")
-        self.models = {"base": self.base_model}
 
-    @modal.enter()
-    def on_restore(self):
-        """After restore: load lightweight adapters + warmup."""
-        from peft import PeftModel
-        import time
+        # Load all adapters as named adapters into a single PeftModel.
+        # Using one PeftModel with named adapters avoids the bug where calling
+        # PeftModel.from_pretrained multiple times on the same base_model object
+        # causes each adapter to overwrite the previous "default" adapter.
+        self.peft_model = None
+        self.loaded_adapters = set()
 
         for adapter_name, adapter_path in ADAPTERS.items():
             adapter_full_path = os.path.join(MODEL_DIR, "adapters", adapter_path)
             if os.path.exists(adapter_full_path):
                 print(f"Loading adapter: {adapter_name}...")
                 start = time.time()
-                self.models[adapter_name] = PeftModel.from_pretrained(
-                    self.base_model,
-                    adapter_full_path,
-                )
+                if self.peft_model is None:
+                    self.peft_model = PeftModel.from_pretrained(
+                        self.base_model,
+                        adapter_full_path,
+                        adapter_name=adapter_name,
+                    )
+                else:
+                    self.peft_model.load_adapter(adapter_full_path, adapter_name=adapter_name)
+                self.loaded_adapters.add(adapter_name)
                 print(f"{adapter_name} adapter loaded in {time.time() - start:.2f}s")
             else:
                 print(f"Adapter not found: {adapter_full_path}, skipping...")
 
-        # Quick warmup
-        self._generate_text("base", "Hi", max_new_tokens=1)
+        print(f"Loaded adapters: {self.loaded_adapters}")
+
+    # runs every time
+    @modal.enter()
+    def on_restore(self):
+        """After snapshot restore: re-create the threading lock and warmup the GPU."""
+        # threading.Lock cannot be snapshotted, so it must be re-created here.
+        # This runs on both cold starts (after snap=True) and snapshot restores.
+        import threading
+        self._adapter_lock = threading.Lock()
+
+        self._generate_text(DEFAULT_MODEL, "Hi", max_new_tokens=1)
         print("Container restored and ready to serve.")
 
-    def _get_model(self, model_name: str):
-        """Get model by name, fallback to base."""
-        if model_name not in self.models:
-            model_name = DEFAULT_MODEL
-        return self.models[model_name]
-
     def _generate_text(self, model_name: str, prompt: str, max_new_tokens: int = 256, temperature: float = 0.7):
-        """Internal generation method."""
+        """Internal generation method. Acquires adapter lock for the full duration."""
         import torch
 
-        model = self._get_model(model_name)
-        inputs = self.tokenizer(prompt, return_tensors="pt").to(model.device)
+        inputs = self.tokenizer(prompt, return_tensors="pt")
 
-        with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                do_sample=temperature > 0,
-                pad_token_id=self.tokenizer.eos_token_id,
-            )
+        with self._adapter_lock:
+            if model_name in self.loaded_adapters and self.peft_model is not None:
+                self.peft_model.set_adapter(model_name)
+                model = self.peft_model
+                inputs = {k: v.to(model.device) for k, v in inputs.items()}
+                with torch.no_grad():
+                    outputs = model.generate(
+                        **inputs,
+                        max_new_tokens=max_new_tokens,
+                        temperature=temperature,
+                        do_sample=temperature > 0,
+                        pad_token_id=self.tokenizer.eos_token_id,
+                    )
+            else:
+                # Fallback to base model with all adapters disabled
+                model = self.peft_model if self.peft_model is not None else self.base_model
+                inputs = {k: v.to(model.device) for k, v in inputs.items()}
+                ctx = model.disable_adapter() if self.peft_model is not None else torch.no_grad()
+                with ctx, torch.no_grad():
+                    outputs = model.generate(
+                        **inputs,
+                        max_new_tokens=max_new_tokens,
+                        temperature=temperature,
+                        do_sample=temperature > 0,
+                        pad_token_id=self.tokenizer.eos_token_id,
+                    )
 
-        response = self.tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
-        return response
+        return self.tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
 
     def _format_messages(self, messages: list[dict]) -> str:
         """Format messages into a prompt string using chat template."""
@@ -160,6 +193,7 @@ class Model:
             add_generation_prompt=True,
         )
 
+    # methods are callable outside the container
     @modal.method()
     def generate(self, messages: list[dict], max_tokens: int = 256, temperature: float = 0.7, model_name: str = DEFAULT_MODEL):
         """Generate a complete response (non-streaming)."""
@@ -173,41 +207,51 @@ class Model:
         from threading import Thread
         import time
 
-        model = self._get_model(model_name)
         prompt = self._format_messages(messages)
 
         print(f"[Model: {model_name}] Messages: {messages}", flush=True)
         start = time.time()
 
-        inputs = self.tokenizer(prompt, return_tensors="pt").to(model.device)
+        inputs = self.tokenizer(prompt, return_tensors="pt")
 
         streamer = TextIteratorStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
-
-        generation_kwargs = {
-            **inputs,
-            "max_new_tokens": max_tokens,
-            "temperature": temperature,
-            "do_sample": temperature > 0,
-            "pad_token_id": self.tokenizer.eos_token_id,
-            "streamer": streamer,
-        }
-
-        thread = Thread(target=model.generate, kwargs=generation_kwargs)
-        thread.start()
 
         first_token_time = None
         token_count = 0
 
-        for token in streamer:
-            if token:
-                if first_token_time is None:
-                    first_token_time = time.time()
-                    print(f"[Prefill: {first_token_time - start:.2f}s]", flush=True)
-                token_count += 1
-                print(token, end="", flush=True)
-                yield token
+        # Hold the adapter lock for the full streaming duration to prevent
+        # another request from switching adapters mid-generation.
+        with self._adapter_lock:
+            if model_name in self.loaded_adapters and self.peft_model is not None:
+                self.peft_model.set_adapter(model_name)
+                model = self.peft_model
+            else:
+                model = self.peft_model if self.peft_model is not None else self.base_model
 
-        thread.join()
+            inputs = {k: v.to(model.device) for k, v in inputs.items()}
+
+            generation_kwargs = {
+                **inputs,
+                "max_new_tokens": max_tokens,
+                "temperature": temperature,
+                "do_sample": temperature > 0,
+                "pad_token_id": self.tokenizer.eos_token_id,
+                "streamer": streamer,
+            }
+
+            thread = Thread(target=model.generate, kwargs=generation_kwargs)
+            thread.start()
+
+            for token in streamer:
+                if token:
+                    if first_token_time is None:
+                        first_token_time = time.time()
+                        print(f"[Prefill: {first_token_time - start:.2f}s]", flush=True)
+                    token_count += 1
+                    print(token, end="", flush=True)
+                    yield token
+
+            thread.join()
 
         total_time = time.time() - start
         gen_time = total_time - (first_token_time - start) if first_token_time else 0
@@ -222,6 +266,7 @@ class Model:
     memory=256,
     scaledown_window=300,
 )
+
 @modal.asgi_app()
 def web_app():
     from fastapi import FastAPI
