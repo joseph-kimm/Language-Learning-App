@@ -36,7 +36,7 @@ def download_adapters():
 
 
 # Bump this to force a full image + snapshot rebuild
-IMAGE_VERSION = "v3"
+IMAGE_VERSION = "v4"
 
 # Define the image with CUDA PyTorch for GPU inference
 # creating an Docker container
@@ -48,7 +48,6 @@ image = (
         "transformers",
         "peft",
         "accelerate",
-        "bitsandbytes",
         "huggingface-hub",
         "fastapi[standard]",
     )
@@ -71,7 +70,7 @@ MODEL_PATH = f"{MODEL_DIR}/base"
 @app.cls(
     image=image,
     gpu="L4",
-    memory=8192,  # 8GB system RAM
+    memory=16384,  # 16GB system RAM (required for bf16)
     scaledown_window=300,  # Keep warm for 5 minutes
     enable_memory_snapshot=True,
     experimental_options={"enable_gpu_snapshot": True},
@@ -86,7 +85,7 @@ class Model:
     def load_base(self):
         
         """Load base model, tokenizer, and all adapters — everything gets snapshotted."""
-        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+        from transformers import AutoModelForCausalLM, AutoTokenizer
         from peft import PeftModel
         import torch
         import time
@@ -94,19 +93,13 @@ class Model:
         print("Loading tokenizer from pre-downloaded model...")
         self.tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
 
-        # NF4 quantization config
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16,
-            bnb_4bit_use_double_quant=True,
-        )
-
-        print("Loading base model with NF4 quantization...")
+        # bf16 instead of NF4 — required for GPU snapshot compatibility.
+        # Qwen2.5-7B in bf16 uses ~14GB VRAM, within the L4's 24GB.
+        print("Loading base model in bf16...")
         start = time.time()
         self.base_model = AutoModelForCausalLM.from_pretrained(
             MODEL_PATH,
-            quantization_config=bnb_config,
+            torch_dtype=torch.bfloat16,
             device_map="auto",
         )
         print(f"Base model loaded in {time.time() - start:.2f}s")
