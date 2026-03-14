@@ -18,6 +18,12 @@
   gap: 1.5rem;
 }
 
+.pageTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .backButton {
   display: flex;
   align-items: center;
@@ -29,11 +35,27 @@
   font-size: 1rem;
   cursor: pointer;
   transition: color 0.2s;
-  align-self: flex-start;
 }
 
 .backButton:hover {
   color: #4a90e2;
+}
+
+.signOutButton {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  color: #6b7280;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  margin-left: auto;
+}
+
+.signOutButton:hover {
+  color: #ef4444;
+  border-color: #ef4444;
 }
 
 .header {
@@ -52,6 +74,38 @@
   color: #6b7280;
   margin: 0;
   line-height: 1.5;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.tab:hover {
+  color: #111827;
+}
+
+.tabActive {
+  color: #4a90e2;
+  border-bottom-color: #4a90e2;
+}
+
+.tabContent {
+  display: flex;
+  flex-direction: column;
 }
 
 @media (min-width: 768px) {

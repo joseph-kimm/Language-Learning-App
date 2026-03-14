@@ -47,8 +47,13 @@ export const resolvers = {
       try {
         await context.connectToMongoDB();
 
-        // Use provided userId or default to mock user
-        const finalUserId = userId || 'mock-user-123';
+        const finalUserId = userId || context.userId;
+
+        if (!finalUserId) {
+          throw new GraphQLError('Not authenticated', {
+            extensions: { code: 'UNAUTHENTICATED' }
+          });
+        }
 
         // Query MongoDB for user's chats, newest first
         const chats = await Chat.find({ userId: finalUserId })
@@ -152,7 +157,13 @@ export const resolvers = {
         await context.connectToMongoDB();
 
         const chatId = uuidv4();
-        const finalUserId = userId || 'mock-user-123';
+        const finalUserId = userId || context.userId;
+
+        if (!finalUserId) {
+          throw new GraphQLError('Not authenticated', {
+            extensions: { code: 'UNAUTHENTICATED' }
+          });
+        }
 
         const newChat = new Chat({
           chatId,

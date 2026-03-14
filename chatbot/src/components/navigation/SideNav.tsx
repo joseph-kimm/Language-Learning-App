@@ -14,6 +14,7 @@ interface SideNavProps {
   selectedChatId: string | null;
   onChatSelect: (chatId: string | null) => void;
   language: TargetLanguage;
+  userId?: string;
 }
 
 interface GetChatsData {
@@ -35,15 +36,14 @@ const GET_CHATS_QUERY = gql`
   }
 `;
 
-export default function SideNav({ isOpen, onClose, selectedChatId, onChatSelect, language }: SideNavProps) {
+export default function SideNav({ isOpen, onClose, selectedChatId, onChatSelect, language, userId }: SideNavProps) {
   const { data, loading, error } = useQuery<GetChatsData>(GET_CHATS_QUERY, {
-    variables: { userId: undefined }, // Uses default 'mock-user-123'
+    variables: { userId },
+    skip: !userId,
   });
 
   // Subscribe to real-time chat updates
-  useChatSubscriptions({
-    userId: undefined, // Uses default 'mock-user-123'
-  });
+  useChatSubscriptions({ userId });
 
   // Filter chats by selected language
   const filteredChats = data?.getChats.filter(

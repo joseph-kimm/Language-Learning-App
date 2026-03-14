@@ -62,13 +62,13 @@ interface ChatUpdatedData {
  */
 export function useChatSubscriptions({ userId }: UseChatSubscriptionsProps = {}) {
   const client = useApolloClient();
-  const finalUserId = userId || 'mock-user-123';
 
   // Subscribe to new chats
   const { data: chatCreatedData, error: chatCreatedError } = useSubscription<ChatCreatedData>(
     CHAT_CREATED_SUBSCRIPTION,
     {
-      variables: { userId: finalUserId },
+      variables: { userId },
+      skip: !userId,
     }
   );
 
@@ -76,7 +76,8 @@ export function useChatSubscriptions({ userId }: UseChatSubscriptionsProps = {})
   const { data: chatUpdatedData, error: chatUpdatedError } = useSubscription<ChatUpdatedData>(
     CHAT_UPDATED_SUBSCRIPTION,
     {
-      variables: { userId: finalUserId },
+      variables: { userId },
+      skip: !userId,
     }
   );
 

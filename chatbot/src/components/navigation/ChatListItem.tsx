@@ -53,7 +53,7 @@ export default function ChatListItem({ chat, isSelected, onClick }: ChatListItem
       <div className={styles.chatContent}>
         {/* Chat creation time */}
         <div className={styles.chatInfo}>
-          <span className={styles.createdTime}>
+          <span className={styles.createdTime} suppressHydrationWarning>
             {'Created: '+ formatRelativeTime(chat.createdAt)}
           </span>
         </div>
@@ -64,7 +64,7 @@ export default function ChatListItem({ chat, isSelected, onClick }: ChatListItem
             <p className={styles.messageText}>
               {truncateText(chat.lastMessage.text)}
             </p>
-            <span className={styles.messageTime}>
+            <span className={styles.messageTime} suppressHydrationWarning>
               {formatRelativeTime(chat.lastMessage.timestamp)}
             </span>
           </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useQuery } from '@apollo/client/react';
 import { gql } from 'graphql-tag';
 import { IoSettingsSharp } from 'react-icons/io5';
@@ -28,9 +29,12 @@ export default function Home() {
   const [selectedLanguage, setSelectedLanguage] = useState<TargetLanguage>(TargetLanguage.KOREAN);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
 
-  const { data: profileData } = useQuery<GetUserProfileData>(GET_USER_PROFILE_QUERY, {
-    variables: { userId: 'mock-user-123' },
+  const { data: profileData, loading: profileLoading } = useQuery<GetUserProfileData>(GET_USER_PROFILE_QUERY, {
+    variables: { userId },
+    skip: !userId,
     fetchPolicy: 'cache-and-network',
   });
 
@@ -43,6 +47,13 @@ export default function Home() {
       setSelectedLanguage(userLanguages[0]);
     }
   }, [profileData]);
+
+  // Redirect to profile setup if logged in but no profile exists yet
+  useEffect(() => {
+    if (userId && !profileLoading && profileData && !profileData.getUserProfile) {
+      router.push('/profile');
+    }
+  }, [userId, profileLoading, profileData, router]);
 
   // Read chatId from URL params
   const chatId = searchParams.get('chat');
@@ -75,6 +86,7 @@ export default function Home() {
         selectedChatId={chatId}
         onChatSelect={handleChatSelect}
         language={selectedLanguage}
+        userId={userId}
       />
 
       <main className={styles.main}>

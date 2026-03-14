@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 import { gql } from "graphql-tag";
 import { useMutation, useQuery } from "@apollo/client/react";
-import styles from "./SurveyForm.module.css";
+import styles from "./AboutTab.module.css";
 import {
   TargetLanguage,
   NativeLanguage,
@@ -65,14 +65,19 @@ const createEmptyLanguageEntry = (): TargetLanguageFormState => ({
   learningGoals: "",
 });
 
-export default function SurveyForm() {
+interface AboutTabProps {
+  userId?: string;
+}
+
+export default function AboutTab({ userId }: AboutTabProps) {
   const [saveUserProfile, { loading, error }] =
     useMutation<SaveUserProfileData>(SAVE_USER_PROFILE_MUTATION, {
       refetchQueries: ["GetUserProfile"],
     });
   const { data: profileData, loading: profileLoading } =
     useQuery<GetUserProfileData>(GET_USER_PROFILE_QUERY, {
-      variables: { userId: "mock-user-123" },
+      variables: { userId },
+      skip: !userId,
       fetchPolicy: "cache-and-network",
     });
 
@@ -202,7 +207,7 @@ export default function SurveyForm() {
 
       // Transform form data to GraphQL input format
       const input = {
-        userId: "mock-user-123",
+        userId: userId!,
         introduction: introduction.trim(),
         nativeLanguage: nativeLanguage,
         interests: interests,
@@ -228,7 +233,7 @@ export default function SurveyForm() {
     }
   };
 
-  // Get available languages for a language entry (exclude native and already selected by others)
+  // Get available languages for a language entry (exclude already selected by others)
   const getAvailableLanguages = (currentIndex: number): TargetLanguage[] => {
     const selectedByOthers = targetLanguages
       .filter((_, i) => i !== currentIndex)

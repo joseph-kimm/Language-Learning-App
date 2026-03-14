@@ -67,6 +67,8 @@ export interface IChatDoc {
 
 export interface IUserDoc {
   userId: string;
+  email: string;
+  name: string;
   createdAt: Date;
 }
 
