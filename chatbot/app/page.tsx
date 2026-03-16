@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useQuery } from '@apollo/client/react';
 import { gql } from 'graphql-tag';
@@ -29,7 +29,9 @@ const GET_USER_PROFILE_QUERY = gql`
 export default function Home() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<TargetLanguage>(TargetLanguage.KOREAN);
-  const searchParams = useSearchParams();
+  // chatId is managed as local state — URL is kept in sync via replaceState (no navigation,
+  // no RSC re-fetch, no Apollo cache wipe)
+  const [chatId, setChatId] = useState<string | null>(null);
   const router = useRouter();
   const { data: session } = useSession();
   const userId = session?.user?.id;
@@ -44,6 +46,12 @@ export default function Home() {
     (lang) => lang.language
   ) || [];
   const nativeLanguage = profileData?.getUserProfile?.nativeLanguage ?? undefined;
+
+  // Read initial chatId from URL on mount so direct links / bookmarks work
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setChatId(params.get('chat'));
+  }, []);
 
   useEffect(() => {
     if (userLanguages.length > 0) {
@@ -63,26 +71,20 @@ export default function Home() {
     warmupModel().catch(console.error);
   }, []);
 
-  // Read chatId from URL params
-  const chatId = searchParams.get('chat');
-
   const toggleNav = () => setIsNavOpen(!isNavOpen);
   const closeNav = () => setIsNavOpen(false);
 
-  // Handle chat selection - updates URL
   const handleChatSelect = (selectedChatId: string | null) => {
-    if (selectedChatId) {
-      // User selected existing chat - update URL with chat param
-      router.push(`/?chat=${selectedChatId}`);
-    } else {
-      // User clicked "New Chat" - clear URL params
-      router.push('/');
-    }
+    setChatId(selectedChatId);
+    // replaceState keeps the URL accurate for back-button and sharing without
+    // triggering a Next.js navigation (which would re-run the RSC layout and
+    // wipe the Apollo cache, causing all queries to reload)
+    window.history.replaceState(null, '', selectedChatId ? `/?chat=${selectedChatId}` : '/');
   };
 
-  // Handle new chat creation - updates URL with new chat ID
   const handleChatCreated = (newChatId: string) => {
-    router.push(`/?chat=${newChatId}`);
+    setChatId(newChatId);
+    window.history.replaceState(null, '', `/?chat=${newChatId}`);
   };
 
   return (
@@ -106,7 +108,8 @@ export default function Home() {
                 availableLanguages={userLanguages.length > 0 ? userLanguages : undefined}
                 onLanguageChange={(lang) => {
                   setSelectedLanguage(lang);
-                  router.push('/');
+                  setChatId(null);
+                  window.history.replaceState(null, '', '/');
                 }}
               />
               <button

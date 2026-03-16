@@ -1,12 +1,12 @@
-import type { Metadata } from 'next';
-import { SessionProvider } from 'next-auth/react';
-import { ApolloProvider } from '@/lib/apollo/ApolloProvider';
-import { auth } from '../auth';
-import './globals.css';
+import type { Metadata } from "next";
+import { SessionProvider } from "next-auth/react";
+import { ApolloProvider } from "@/lib/apollo/ApolloProvider";
+import { auth } from "../auth";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'Language Learning Chatbot',
-  description: 'Learn any language through interactive conversations',
+  title: "Language Buddy",
+  description: "Learn any language through interactive conversations",
 };
 
 export default async function RootLayout({
