@@ -10,7 +10,7 @@ export interface SSEMessage {
 }
 
 export function createSSEStream(
-  sendMessage: (message: SSEMessage) => void,
+  sendMessage: (send: (message: SSEMessage) => void) => void,
   onClose?: () => void
 ): ReadableStream {
   const encoder = new TextEncoder();
