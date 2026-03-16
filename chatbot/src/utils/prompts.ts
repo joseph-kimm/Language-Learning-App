@@ -62,6 +62,61 @@ interface SystemPromptParams {
   introduction?: string;
 }
 
+interface ImproveSentencePromptParams {
+  targetLangLabel: string;
+  nativeLangLabel: string;
+  userSentence: string;
+  contextStr: string;
+}
+
+/**
+ * Builds the prompt for improving a user's sentence.
+ */
+export function buildImproveSentencePrompt({
+  targetLangLabel,
+  nativeLangLabel,
+  userSentence,
+  contextStr,
+}: ImproveSentencePromptParams): string {
+  return `You are a language teacher. A student learning ${targetLangLabel} wrote this sentence:
+
+"${userSentence}"
+
+Recent conversation context:
+${contextStr}
+
+Improve the sentence to be more natural and grammatically correct.
+Respond in EXACTLY this format with no extra text:
+IMPROVED: [improved sentence in ${targetLangLabel}]
+EXPLANATION: [brief explanation of the changes in ${nativeLangLabel}]`;
+}
+
+interface ExplainBotMessagePromptParams {
+  targetLangLabel: string;
+  nativeLangLabel: string;
+  proficiencyLevel: string;
+  botMessage: string;
+}
+
+/**
+ * Builds the prompt for translating and explaining a bot's message in the user's native language.
+ */
+export function buildExplainBotMessagePrompt({
+  targetLangLabel,
+  nativeLangLabel,
+  proficiencyLevel,
+  botMessage,
+}: ExplainBotMessagePromptParams): string {
+  return `You are a language teacher. A student learning ${targetLangLabel} (${proficiencyLevel} level) received this message:
+
+"${botMessage}"
+
+Translate it and briefly explain any notable vocabulary, grammar, or expressions.
+Respond in EXACTLY this format with no extra text:
+TRANSLATION: [full translation in ${nativeLangLabel}]
+EXPLANATION: [1-2 sentences in ${nativeLangLabel} for a ${proficiencyLevel} learner. If nothing notable, write "No notes."]`;
+}
+
 /**
  * Builds the system prompt for the LLM based on user profile and chat personality.
  */
@@ -70,7 +125,6 @@ export function buildSystemPrompt({
   proficiencyLevel,
   learningGoals,
   interests,
-  correctionStyle,
   personality,
   introduction,
 }: SystemPromptParams): string {

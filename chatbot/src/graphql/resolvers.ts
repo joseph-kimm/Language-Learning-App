@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Chat, Message, Sender, UserProfile } from '@/lib/mongodb/mongodb_schema';
 import { GraphQLContext } from './context';
 import { pubsub, CHAT_EVENTS, ChatCreatedPayload, ChatUpdatedPayload, BotMessageChunkPayload } from '@/lib/pubsub/pubsub';
-import { generateBotResponse } from '@/utils/botResponseService';
+import { generateBotResponse, improveSentence, explainBotMessage } from '@/utils/botResponseService';
 
 export const resolvers = {
   Query: {
@@ -116,6 +116,40 @@ export const resolvers = {
         console.error('Error fetching messages:', error);
         throw new GraphQLError('Failed to fetch messages', {
           extensions: { code: 'DB_CONNECTION_ERROR' }
+        });
+      }
+    },
+
+    // Improve a user's sentence — delegates all logic to botResponseService
+    improveSentence: async (
+      _parent: unknown,
+      { chatId, messageId }: { chatId: string; messageId: string },
+      context: GraphQLContext
+    ) => {
+      try {
+        return await improveSentence(chatId, messageId, context);
+      } catch (error) {
+        if (error instanceof GraphQLError) throw error;
+        console.error('Error improving sentence:', error);
+        throw new GraphQLError('Failed to improve sentence', {
+          extensions: { code: 'LLM_ERROR' }
+        });
+      }
+    },
+
+    // Translate and explain a bot message in the user's native language
+    explainBotMessage: async (
+      _parent: unknown,
+      { chatId, messageId }: { chatId: string; messageId: string },
+      context: GraphQLContext
+    ) => {
+      try {
+        return await explainBotMessage(chatId, messageId, context);
+      } catch (error) {
+        if (error instanceof GraphQLError) throw error;
+        console.error('Error explaining bot message:', error);
+        throw new GraphQLError('Failed to explain bot message', {
+          extensions: { code: 'LLM_ERROR' }
         });
       }
     },

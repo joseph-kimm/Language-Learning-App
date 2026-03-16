@@ -50,7 +50,7 @@ export default function TTSButton({ text, isUser, onHide, language }: TTSButtonP
       className={`${styles.ttsButton} ${isUser ? styles.userMessage : styles.botMessage} ${isLoading ? styles.loading : ''} ${isPlaying ? styles.playing : ''}`}
       onClick={handleClick}
       aria-label={isPlaying ? "Stop audio" : isLoading ? "Loading audio..." : "Read message aloud"}
-      title={isPlaying ? "Stop" : isLoading ? "Loading..." : "Read aloud"}
+      data-tooltip={isPlaying ? "Stop" : isLoading ? "Loading..." : "Read aloud"}
       disabled={isLoading}
     >
       {isLoading ? (

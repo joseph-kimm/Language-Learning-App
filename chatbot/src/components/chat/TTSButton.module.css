@@ -44,9 +44,16 @@
   background: #dc2626;
 }
 
-/* Position for bot messages (button on right of bubble) */
+/* Position for bot messages (button on right of bubble) — grey to match bot bubble */
 .botMessage {
   left: calc(100% + 8px);
+  background: #d1d5db;
+  color: #374151;
+}
+
+.botMessage:hover {
+  background: #9ca3af;
+  transform: translateY(-50%) scale(1.1);
 }
 
 /* Position for user messages (button on left of bubble) */
@@ -81,4 +88,27 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Tooltip */
+.ttsButton::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+
+.ttsButton:hover::after {
+  opacity: 1;
 }

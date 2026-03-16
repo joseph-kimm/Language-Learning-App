@@ -1,14 +1,16 @@
 import { Chat, Message, Sender, UserProfile } from '@/lib/mongodb/mongodb_schema';
 import { pubsub, CHAT_EVENTS } from '@/lib/pubsub/pubsub';
-import { generateBotResponseStream } from '@/utils/huggingFaceLLM';
-import { buildSystemPrompt } from '@/utils/prompts';
+import { generateBotResponseStream, generateTextCompletion } from '@/utils/huggingFaceLLM';
+import { buildSystemPrompt, buildImproveSentencePrompt, buildExplainBotMessagePrompt } from '@/utils/prompts';
 import type { ConversationMessage } from '@/types/llm';
 import type { GraphQLContext } from '@/graphql/context';
 import { Personality } from '@/types/chat';
 import {
   TargetLanguage,
+  NativeLanguage,
   Interests,
   getLanguageLabel,
+  getNativeLanguageLabel,
   getProficiencyLabel,
   getInterestLabel,
   getCorrectionStyleLabel
@@ -175,4 +177,107 @@ export async function generateBotResponse(
       chatId
     });
   }
+}
+
+/**
+ * Improves a user's sentence using conversation context.
+ * Returns the improved sentence and an explanation in the user's native language.
+ */
+export async function improveSentence(
+  chatId: string,
+  messageId: string,
+  context: GraphQLContext
+): Promise<{ improvedSentence: string; explanation: string }> {
+  await context.connectToMongoDB();
+
+  const chat = await Chat.findOne({ chatId }).lean();
+  if (!chat) throw new Error(`Chat ${chatId} not found`);
+
+  const targetMessage = await Message.findById(messageId).lean();
+  if (!targetMessage) throw new Error('Message not found');
+
+  // Last 10 messages for conversation context
+  const recentMessages = await Message.find({ chatId })
+    .sort({ timestamp: -1 })
+    .limit(10)
+    .lean();
+  const contextMessages = recentMessages.reverse();
+
+  const profile = await UserProfile.findOne({ userId: chat.userId }).lean();
+  const nativeLangLabel = profile?.nativeLanguage
+    ? getNativeLanguageLabel(profile.nativeLanguage as NativeLanguage)
+    : 'English';
+  const targetLangLabel = getLanguageLabel(chat.language as TargetLanguage);
+
+  const contextStr = contextMessages
+    .map(m => `${m.sender === Sender.USER ? 'USER' : 'BOT'}: ${m.text}`)
+    .join('\n');
+
+  const prompt = buildImproveSentencePrompt({
+    targetLangLabel,
+    nativeLangLabel,
+    userSentence: targetMessage.text,
+    contextStr,
+  });
+
+  const result = await generateTextCompletion(
+    [{ role: 'user', content: prompt }]
+  );
+
+  const improvedMatch = result.match(/IMPROVED:\s*(.+?)(?=\nEXPLANATION:|$)/s);
+  const explanationMatch = result.match(/EXPLANATION:\s*([\s\S]+?)$/);
+
+  return {
+    improvedSentence: improvedMatch?.[1]?.trim() ?? result.trim(),
+    explanation: explanationMatch?.[1]?.trim() ?? ''
+  };
+}
+
+/**
+ * Translates a bot's message and explains notable language points in the user's native language.
+ */
+export async function explainBotMessage(
+  chatId: string,
+  messageId: string,
+  context: GraphQLContext
+): Promise<{ translation: string; explanation: string }> {
+  await context.connectToMongoDB();
+
+  const chat = await Chat.findOne({ chatId }).lean();
+  if (!chat) throw new Error(`Chat ${chatId} not found`);
+
+  const targetMessage = await Message.findById(messageId).lean();
+  if (!targetMessage) throw new Error('Message not found');
+
+  const profile = await UserProfile.findOne({ userId: chat.userId }).lean();
+  const nativeLangLabel = profile?.nativeLanguage
+    ? getNativeLanguageLabel(profile.nativeLanguage as NativeLanguage)
+    : 'English';
+  const targetLangLabel = getLanguageLabel(chat.language as TargetLanguage);
+
+  const langEntry = profile?.learningLanguages?.find(
+    (l: { language: string }) => l.language === chat.language
+  );
+  const proficiencyLevel = langEntry
+    ? getProficiencyLabel(langEntry.proficiencyLevel)
+    : 'Intermediate';
+
+  const prompt = buildExplainBotMessagePrompt({
+    targetLangLabel,
+    nativeLangLabel,
+    proficiencyLevel,
+    botMessage: targetMessage.text,
+  });
+
+  const result = await generateTextCompletion(
+    [{ role: 'user', content: prompt }]
+  );
+
+  const translationMatch = result.match(/TRANSLATION:\s*(.+?)(?=\nEXPLANATION:|$)/s);
+  const explanationMatch = result.match(/EXPLANATION:\s*([\s\S]+?)$/);
+
+  return {
+    translation: translationMatch?.[1]?.trim() ?? result.trim(),
+    explanation: explanationMatch?.[1]?.trim() ?? ''
+  };
 }

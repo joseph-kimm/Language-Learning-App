@@ -270,7 +270,15 @@ def web_app():
     import uuid
     import time
 
+    from fastapi.middleware.cors import CORSMiddleware
+
     api = FastAPI(title="Language Chatbot API (Transformers)")
+    api.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     model = Model()
 
     available_models = ["base"] + list(ADAPTERS.keys())
@@ -327,6 +335,9 @@ def web_app():
 
         # Streaming response
         def event_generator():
+            # Yield a keep-alive comment immediately so Vercel edge functions
+            # don't time out (25s limit) while waiting for the model to start.
+            yield ": ping\n\n"
             try:
                 for token in model.generate_stream.remote_gen(
                     messages_dicts,

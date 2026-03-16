@@ -7,6 +7,47 @@ const LLM_CONFIG = {
   maxTokens: 100,
 };
 
+export async function warmupModel(signal?: AbortSignal): Promise<void> {
+  try {
+    await fetch(LLM_CONFIG.endpointUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'base',
+        messages: [{ role: 'user', content: 'hi' }],
+        max_tokens: 1,
+        stream: false,
+      }),
+      signal,
+    });
+  } catch {
+    // Intentionally ignored — fire-and-forget warmup
+  }
+}
+
+export async function generateTextCompletion(
+  messages: { role: string; content: string }[]
+): Promise<string> {
+  const response = await fetch(LLM_CONFIG.endpointUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'base',
+      messages,
+      temperature: LLM_CONFIG.temperature,
+      max_tokens: 300,
+      stream: false,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content ?? '';
+}
+
 export async function* generateBotResponseStream(
   conversationHistory: ConversationMessage[] = [],
   systemPrompt: string,

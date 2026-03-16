@@ -6,6 +6,8 @@ export const typeDefs = gql`
     getChats(userId: ID): [Chat!]!
     getMessages(chatId: ID!): [Message!]!
     getUserProfile(userId: ID!): UserProfile
+    improveSentence(chatId: ID!, messageId: ID!): SentenceImprovement!
+    explainBotMessage(chatId: ID!, messageId: ID!): BotMessageExplanation!
   }
 
   type Mutation {
@@ -37,6 +39,16 @@ export const typeDefs = gql`
     chatCreated(userId: ID!): Chat
     chatUpdated(userId: ID!): Chat
     botMessageStream(chatId: ID!, messageId: ID!): MessageChunk!
+  }
+
+  type SentenceImprovement {
+    improvedSentence: String!
+    explanation: String!
+  }
+
+  type BotMessageExplanation {
+    translation: String!
+    explanation: String!
   }
 
   #for chatting

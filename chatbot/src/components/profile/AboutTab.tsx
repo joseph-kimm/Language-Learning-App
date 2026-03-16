@@ -10,7 +10,6 @@ import {
   NativeLanguage,
   ProficiencyLevel,
   Interests,
-  CorrectionStyle,
   TargetLanguageFormState,
   SaveUserProfileData,
   GetUserProfileData,
@@ -18,7 +17,6 @@ import {
   getNativeLanguageLabel,
   getProficiencyLabel,
   getInterestLabel,
-  getCorrectionStyleLabel,
 } from "@/types/survey";
 
 const SAVE_USER_PROFILE_MUTATION = gql`
@@ -86,7 +84,6 @@ export default function AboutTab({ userId }: AboutTabProps) {
   const [interests, setInterests] = useState<Interests[]>([]);
   const [additionalInterests, setAdditionalInterests] = useState<string>("");
   const [nativeLanguage, setNativeLanguage] = useState<string>("");
-  const [correctionStyle, setCorrectionStyle] = useState<string>("");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Languages section state
@@ -103,8 +100,6 @@ export default function AboutTab({ userId }: AboutTabProps) {
     setInterests(profile.interests);
     setAdditionalInterests(profile.additionalInterests.join(", "));
     setNativeLanguage(profile.nativeLanguage);
-    setCorrectionStyle(profile.correctionStyle);
-
     if (profile.learningLanguages.length > 0) {
       setTargetLanguages(
         profile.learningLanguages.map((lang) => ({
@@ -152,11 +147,6 @@ export default function AboutTab({ userId }: AboutTabProps) {
       alert("Please select at least one interest");
       return false;
     }
-    if (!correctionStyle) {
-      alert("Please select your preferred correction style");
-      return false;
-    }
-
     // Languages section validation
     if (targetLanguages.length === 0) {
       alert("Please add at least one language to learn");
@@ -212,7 +202,6 @@ export default function AboutTab({ userId }: AboutTabProps) {
         nativeLanguage: nativeLanguage,
         interests: interests,
         additionalInterests: additionalInterestsArray,
-        correctionStyle: correctionStyle,
         learningLanguages: targetLanguages.map((lang) => ({
           language: lang.targetLanguage,
           proficiencyLevel: lang.proficiencyLevel,
@@ -321,27 +310,6 @@ export default function AboutTab({ userId }: AboutTabProps) {
             </select>
           </div>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="correctionStyle" className={styles.label}>
-              Correction Style <span className={styles.required}>*</span>
-            </label>
-            <p className={styles.helpText}>
-              How would you like me to correct your mistakes?
-            </p>
-            <select
-              id="correctionStyle"
-              value={correctionStyle}
-              onChange={(e) => setCorrectionStyle(e.target.value)}
-              className={styles.select}
-            >
-              <option value="">Select your preferred correction style</option>
-              {Object.values(CorrectionStyle).map((style) => (
-                <option key={style} value={style}>
-                  {getCorrectionStyleLabel(style)}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {/* Section 2: Languages to Learn */}

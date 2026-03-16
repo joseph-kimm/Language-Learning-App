@@ -78,24 +78,30 @@ interface ChatInterfaceProps {
   chatId: string | null;
   onChatCreated?: (chatId: string) => void;
   language: TargetLanguage;
+  nativeLanguage?: string;
 }
 
 export default function ChatInterface({
   chatId,
   onChatCreated,
   language,
+  nativeLanguage,
 }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(chatId);
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [selectedPersonality, setSelectedPersonality] = useState<Personality | null>(null);
+  const [selectedPersonality, setSelectedPersonality] =
+    useState<Personality | null>(null);
   const [streamingBotMessageId, setStreamingBotMessageId] = useState<
     string | null
   >(null);
+  const [showWarmupPopup, setShowWarmupPopup] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const warmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevStreamingIdRef = useRef<string | null>(null);
 
   // Speech-to-text hook
   const {
@@ -114,8 +120,9 @@ export default function ChatInterface({
     useMutation<CreateChatData>(CREATE_CHAT_MUTATION);
   const [addMessageMutation] =
     useMutation<AddMessageData>(ADD_MESSAGE_MUTATION);
-  const [regenerateResponseMutation] =
-    useMutation<RegenerateResponseData>(REGENERATE_RESPONSE_MUTATION);
+  const [regenerateResponseMutation] = useMutation<RegenerateResponseData>(
+    REGENERATE_RESPONSE_MUTATION,
+  );
 
   // Fetch messages when chatId is available
   const { data: messagesData, refetch } = useQuery<GetMessagesData>(
@@ -187,6 +194,29 @@ export default function ChatInterface({
     }
   }, [transcript]);
 
+  // Dismiss warmup popup when streaming completes (not when placeholder is created).
+  // The placeholder appears quickly (~1-2s), but the model may still be cold-starting;
+  // we want the popup to stay until actual tokens have finished arriving.
+  useEffect(() => {
+    const prev = prevStreamingIdRef.current;
+    if (prev !== null && streamingBotMessageId === null) {
+      // Transition from streaming → done: cancel timer and dismiss
+      if (warmupTimerRef.current) {
+        clearTimeout(warmupTimerRef.current);
+        warmupTimerRef.current = null;
+      }
+      setShowWarmupPopup(false);
+    }
+    prevStreamingIdRef.current = streamingBotMessageId;
+  }, [streamingBotMessageId]);
+
+  // Clear warmup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (warmupTimerRef.current) clearTimeout(warmupTimerRef.current);
+    };
+  }, []);
+
   // Auto-resize textarea as content changes
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -242,12 +272,18 @@ export default function ChatInterface({
     setMessage("");
     resetTranscript();
     setIsLoading(true);
+    warmupTimerRef.current = setTimeout(() => setShowWarmupPopup(true), 5000);
 
     try {
       // Create chat on first message if no chatId provided
       let activeChatId = currentChatId;
       if (!activeChatId) {
-        const { data } = await createChatMutation({ variables: { language, personality: selectedPersonality || 'DEFAULT' } });
+        const { data } = await createChatMutation({
+          variables: {
+            language,
+            personality: selectedPersonality || "DEFAULT",
+          },
+        });
         activeChatId = data?.createChat?.chatId || null;
         setCurrentChatId(activeChatId);
         // Notify parent component about new chat creation
@@ -281,6 +317,11 @@ export default function ChatInterface({
       }
     } catch (error) {
       console.error("Failed to send message:", error);
+      if (warmupTimerRef.current) {
+        clearTimeout(warmupTimerRef.current);
+        warmupTimerRef.current = null;
+      }
+      setShowWarmupPopup(false);
       alert("Failed to send message. Please try again.");
     } finally {
       setIsLoading(false);
@@ -307,7 +348,9 @@ export default function ChatInterface({
               <div key={group.date}>
                 <DateDivider date={group.date} />
                 {group.messages.map((msg) => {
-                  const lastBotMsg = messages.findLast((m) => m.sender === Sender.BOT);
+                  const lastBotMsg = messages.findLast(
+                    (m) => m.sender === Sender.BOT,
+                  );
                   return (
                     <MessageBubble
                       key={msg._id}
@@ -320,6 +363,7 @@ export default function ChatInterface({
                       language={TARGET_LANGUAGE_TO_BCP47[language]}
                       isLastBotMessage={msg._id === lastBotMsg?._id}
                       onRegenerate={() => handleRegenerate(msg._id)}
+                      nativeLanguage={nativeLanguage}
                     />
                   );
                 })}
@@ -331,6 +375,24 @@ export default function ChatInterface({
       </div>
 
       {sttError && <div className={styles.errorMessage}>{sttError}</div>}
+
+      {showWarmupPopup && (
+        <div className={styles.warmupPopup}>
+          <span className={styles.warmupIcon}>ℹ</span>
+          <p className={styles.warmupText}>
+            The model may be waking up from a cold start and may take some time
+            to respond. Thanks for your patience!
+          </p>
+          <button
+            type="button"
+            className={styles.warmupDismiss}
+            onClick={() => setShowWarmupPopup(false)}
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <form
         className={styles.inputForm}
@@ -375,11 +437,27 @@ export default function ChatInterface({
             {isProcessing ? (
               <span className={styles.spinner} />
             ) : isRecording ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <rect x="6" y="6" width="12" height="12" rx="1" />
               </svg>
             ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <rect x="9" y="2" width="6" height="12" rx="3" />
                 <path d="M5 10a7 7 0 0 0 14 0" />
                 <line x1="12" y1="19" x2="12" y2="22" />

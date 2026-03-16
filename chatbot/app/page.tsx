@@ -17,6 +17,7 @@ const GET_USER_PROFILE_QUERY = gql`
   query GetUserProfile($userId: ID!) {
     getUserProfile(userId: $userId) {
       userId
+      nativeLanguage
       learningLanguages {
         language
       }
@@ -41,6 +42,7 @@ export default function Home() {
   const userLanguages = profileData?.getUserProfile?.learningLanguages?.map(
     (lang) => lang.language
   ) || [];
+  const nativeLanguage = profileData?.getUserProfile?.nativeLanguage ?? undefined;
 
   useEffect(() => {
     if (userLanguages.length > 0) {
@@ -111,7 +113,7 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <ChatInterface chatId={chatId} onChatCreated={handleChatCreated} language={selectedLanguage} />
+          <ChatInterface chatId={chatId} onChatCreated={handleChatCreated} language={selectedLanguage} nativeLanguage={nativeLanguage} />
         </div>
       </main>
     </div>
