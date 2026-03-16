@@ -31,7 +31,6 @@ export const typeDefs = gql`
     nativeLanguage: NativeLanguage!
     interests: [Interests!]!
     additionalInterests: [String!]
-    correctionStyle: CorrectionStyle!
     learningLanguages: [LearningLanguageInput!]!
   }
 
@@ -102,7 +101,6 @@ export const typeDefs = gql`
     nativeLanguage: NativeLanguage!
     interests: [Interests!]!
     additionalInterests: [String!]!
-    correctionStyle: CorrectionStyle!
     learningLanguages: [LearningLanguage]!
     createdAt: String!
     updatedAt: String!

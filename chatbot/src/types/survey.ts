@@ -90,7 +90,6 @@ export interface IUserProfile {
   nativeLanguage: NativeLanguage;
   interests: Interests[];
   additionalInterests: string[];
-  correctionStyle: CorrectionStyle;
   learningLanguages: ILearningLanguage[];
   createdAt: string;
   updatedAt: string;
@@ -107,7 +106,6 @@ export interface IUserProfileDoc {
   nativeLanguage: NativeLanguage;
   interests: Interests[];
   additionalInterests: string[];
-  correctionStyle: CorrectionStyle;
   learningLanguages: ILearningLanguage[];
   createdAt: Date;
   updatedAt: Date;
@@ -143,7 +141,6 @@ export interface SurveyData {
   interests: Interests[];
   additionalInterests: string[];
   nativeLanguage: NativeLanguage;
-  correctionStyle: CorrectionStyle;
   // Languages section (array for multiple languages)
   targetLanguages: TargetLanguageData[];
 }
@@ -161,7 +158,6 @@ export interface SurveyFormState {
   interests: Interests[];
   additionalInterests: string;
   nativeLanguage: string;
-  correctionStyle: string;
   targetLanguages: TargetLanguageFormState[];
 }
 

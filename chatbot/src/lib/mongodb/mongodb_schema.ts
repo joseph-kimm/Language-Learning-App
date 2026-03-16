@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { Sender, Personality, IMessageDoc, IChatDoc, IUserDoc } from '@/types/chat';
-import { IUserProfileDoc, NativeLanguage, Interests, CorrectionStyle, TargetLanguage, ProficiencyLevel } from '@/types/survey';
+import { IUserProfileDoc, NativeLanguage, Interests, TargetLanguage, ProficiencyLevel } from '@/types/survey';
 
 /**
  * MongoDB schemas and models (server-side only)
@@ -99,11 +99,6 @@ const UserProfileSchema = new Schema<IUserProfileDocument>({
     enum: Object.values(Interests)
   }],
   additionalInterests: [{ type: String }],
-  correctionStyle: {
-    type: String,
-    enum: Object.values(CorrectionStyle),
-    required: true
-  },
   learningLanguages: [LearningLanguageSchema],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

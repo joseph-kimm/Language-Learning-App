@@ -170,7 +170,6 @@ export const resolvers = {
           nativeLanguage: profile.nativeLanguage,
           interests: profile.interests,
           additionalInterests: profile.additionalInterests || [],
-          correctionStyle: profile.correctionStyle,
           learningLanguages: profile.learningLanguages,
           createdAt: profile.createdAt.toISOString(),
           updatedAt: profile.updatedAt.toISOString()
@@ -389,7 +388,6 @@ export const resolvers = {
         nativeLanguage: string;
         interests: string[];
         additionalInterests?: string[];
-        correctionStyle: string;
         learningLanguages: Array<{
           language: string;
           proficiencyLevel: string;
@@ -408,7 +406,6 @@ export const resolvers = {
           nativeLanguage: input.nativeLanguage,
           interests: input.interests,
           additionalInterests: input.additionalInterests || [],
-          correctionStyle: input.correctionStyle,
           learningLanguages: input.learningLanguages,
           updatedAt: now
         };
@@ -439,7 +436,6 @@ export const resolvers = {
           nativeLanguage: savedProfile.nativeLanguage,
           interests: savedProfile.interests,
           additionalInterests: savedProfile.additionalInterests || [],
-          correctionStyle: savedProfile.correctionStyle,
           learningLanguages: savedProfile.learningLanguages,
           createdAt: savedProfile.createdAt.toISOString(),
           updatedAt: savedProfile.updatedAt.toISOString()

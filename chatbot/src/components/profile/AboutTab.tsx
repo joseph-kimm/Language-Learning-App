@@ -27,7 +27,6 @@ const SAVE_USER_PROFILE_MUTATION = gql`
       nativeLanguage
       interests
       additionalInterests
-      correctionStyle
       learningLanguages {
         language
         proficiencyLevel
@@ -47,7 +46,6 @@ const GET_USER_PROFILE_QUERY = gql`
       nativeLanguage
       interests
       additionalInterests
-      correctionStyle
       learningLanguages {
         language
         proficiencyLevel

@@ -1,11 +1,7 @@
-import { PubSub } from 'graphql-subscriptions';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import Redis from 'ioredis';
 import type { IChat } from '@/types/chat';
 import type { MessageChunk } from '@/types/llm';
-
-/**
- * PubSub instance for GraphQL subscriptions
- * In production, replace with RedisPubSub for horizontal scaling
- */
 
 // Event types
 export const CHAT_EVENTS = {
@@ -14,7 +10,7 @@ export const CHAT_EVENTS = {
   BOT_MESSAGE_CHUNK: 'BOT_MESSAGE_CHUNK',
 } as const;
 
-// Event payload types - reusing existing IChat interface
+// Event payload types
 export interface ChatCreatedPayload {
   chatCreated: IChat;
 }
@@ -27,15 +23,20 @@ export interface BotMessageChunkPayload {
   botMessageStream: MessageChunk;
 }
 
-// Singleton instance - use global to persist across Next.js route handlers
-// This is crucial because Next.js can create separate module instances for different routes
-const globalForPubSub = globalThis as unknown as {
-  pubsub: PubSub | undefined;
+const redisOptions = {
+  tls: { rejectUnauthorized: false },
+  family: 4,
+  enableReadyCheck: false, // Upstash blocks the INFO command used for ready checks
+  lazyConnect: true,       // Defer TCP connection until first command, avoiding eager module-load connections
+  maxRetriesPerRequest: 0, // Don't retry failed commands — fail fast rather than queuing
 };
 
-export const pubsub = globalForPubSub.pubsub ?? new PubSub();
+// Two separate clients required by Redis pub/sub protocol
+const publisher = new Redis(process.env.REDIS_URL!, redisOptions);
+const subscriber = new Redis(process.env.REDIS_URL!, redisOptions);
 
-// Persist in global to ensure same instance across all routes
-if (!globalForPubSub.pubsub) {
-  globalForPubSub.pubsub = pubsub;
-}
+// Prevent unhandled 'error' events from crashing the process
+publisher.on('error', (err) => console.error('[Redis publisher]', err.message));
+subscriber.on('error', (err) => console.error('[Redis subscriber]', err.message));
+
+export const pubsub = new RedisPubSub({ publisher, subscriber });

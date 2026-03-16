@@ -57,7 +57,6 @@ interface SystemPromptParams {
   proficiencyLevel: string;
   learningGoals: string;
   interests: string[];
-  correctionStyle: string;
   personality: Personality;
   introduction?: string;
 }

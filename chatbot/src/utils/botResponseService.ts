@@ -13,7 +13,6 @@ import {
   getNativeLanguageLabel,
   getProficiencyLabel,
   getInterestLabel,
-  getCorrectionStyleLabel
 } from '@/types/survey';
 
 const FALLBACK_MESSAGES: Record<string, string> = {
@@ -52,7 +51,6 @@ export async function generateBotResponse(
       proficiencyLevel: langEntry ? getProficiencyLabel(langEntry.proficiencyLevel) : 'intermediate',
       learningGoals: langEntry?.learningGoals || 'general conversation',
       interests: profile?.interests?.map((i: string) => getInterestLabel(i as Interests)) || ['Daily Life'],
-      correctionStyle: profile ? getCorrectionStyleLabel(profile.correctionStyle) : 'Always correct me',
       personality: (chat.personality as Personality) || Personality.DEFAULT,
       introduction: profile?.introduction,
     });
