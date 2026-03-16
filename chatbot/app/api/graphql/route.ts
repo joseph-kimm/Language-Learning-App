@@ -1,4 +1,5 @@
 import { startServerAndCreateNextHandler } from '@as-integrations/next';
+import { NextRequest } from 'next/server';
 import { server } from '@/lib/apollo/server';
 import { createContext } from '@/graphql/context';
 
@@ -11,4 +12,10 @@ const handler = startServerAndCreateNextHandler(server, {
   context: createContext,
 });
 
-export { handler as GET, handler as POST };
+export async function GET(req: NextRequest) {
+  return handler(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handler(req);
+}
