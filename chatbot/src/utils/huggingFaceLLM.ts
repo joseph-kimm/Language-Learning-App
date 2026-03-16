@@ -2,14 +2,14 @@ import type { ConversationMessage } from "@/types/llm";
 import { TargetLanguage } from "@/types/survey";
 
 const LLM_CONFIG = {
-  endpointUrl: 'https://josephjiminkim--language-chatbot-transformers-web-app.modal.run/v1/chat/completions',
+  endpointUrl: process.env.LLM_URL ?? '',
   temperature: 0.7,
   maxTokens: 100,
 };
 
 export async function warmupModel(signal?: AbortSignal): Promise<void> {
   try {
-    await fetch(LLM_CONFIG.endpointUrl, {
+    const response = await fetch(LLM_CONFIG.endpointUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -20,8 +20,13 @@ export async function warmupModel(signal?: AbortSignal): Promise<void> {
       }),
       signal,
     });
-  } catch {
-    // Intentionally ignored — fire-and-forget warmup
+    if (!response.ok) {
+      throw new Error(`Warmup failed: ${response.status}`);
+    }
+  } catch (error) {
+    // Silently ignore abort — that's intentional cleanup
+    if (error instanceof Error && error.name === 'AbortError') return;
+    throw error;
   }
 }
 

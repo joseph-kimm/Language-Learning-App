@@ -1,3 +1,4 @@
+import { after } from 'next/server';
 import { GraphQLError } from 'graphql';
 import { withFilter } from 'graphql-subscriptions';
 import { v4 as uuidv4 } from 'uuid';
@@ -307,12 +308,10 @@ export const resolvers = {
           });
         }
 
-        // If message is from USER, generate bot response in background
+        // Defer bot generation until after the response is sent — Vercel's waitUntil
+        // keeps the function alive to complete it (up to maxDuration = 120s)
         if (sender === Sender.USER) {
-          // Don't await - run in background
-          generateBotResponse(chatId, context).catch(err => {
-            console.error('[Bot Response Error]', err);
-          });
+          after(generateBotResponse(chatId, context));
         }
 
         // Return the new message
@@ -356,10 +355,8 @@ export const resolvers = {
           });
         }
 
-        // Trigger new bot response in background (reuses existing pipeline)
-        generateBotResponse(chatId, context).catch(err => {
-          console.error('[Regenerate Bot Response Error]', err);
-        });
+        // Defer new bot generation — same pattern as addMessage
+        after(generateBotResponse(chatId, context));
 
         return {
           _id: existingMessage._id.toString(),
@@ -475,15 +472,14 @@ export const resolvers = {
       )
     },
 
-    // Subscribe to bot message streaming chunks
+    // Subscribe to bot message streaming chunks — filtered by chatId only since
+    // messageId isn't known to the client until after the placeholder is created
     botMessageStream: {
       subscribe: withFilter(
         () => pubsub.asyncIterableIterator(CHAT_EVENTS.BOT_MESSAGE_CHUNK),
-        (payload: BotMessageChunkPayload | undefined, variables: { chatId: string; messageId: string } | undefined) => {
-          // Only send chunks for the specific message being streamed
+        (payload: BotMessageChunkPayload | undefined, variables: { chatId: string } | undefined) => {
           return !!payload && !!variables &&
-                 payload.botMessageStream.chatId === variables.chatId &&
-                 payload.botMessageStream.messageId === variables.messageId;
+                 payload.botMessageStream.chatId === variables.chatId;
         }
       )
     }

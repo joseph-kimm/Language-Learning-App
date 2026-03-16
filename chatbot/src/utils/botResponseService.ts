@@ -157,6 +157,7 @@ export async function generateBotResponse(
           chatId: updatedChat.chatId,
           userId: updatedChat.userId,
           language: updatedChat.language,
+          personality: updatedChat.personality || 'DEFAULT',
           createdAt: updatedChat.createdAt.toISOString(),
           lastMessage: updatedChat.lastMessage ? {
             _id: updatedChat.lastMessage._id,

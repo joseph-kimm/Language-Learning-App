@@ -36,7 +36,7 @@ def download_adapters():
 
 
 # Bump this to force a full image + snapshot rebuild
-IMAGE_VERSION = "v4"
+IMAGE_VERSION = "v5"
 
 # Define the image with CUDA PyTorch for GPU inference
 # creating an Docker container
@@ -71,7 +71,7 @@ MODEL_PATH = f"{MODEL_DIR}/base"
     image=image,
     gpu="L4",
     memory=16384,  # 16GB system RAM (required for bf16)
-    scaledown_window=300,  # Keep warm for 5 minutes
+    scaledown_window=600,  # Keep warm for 10 minutes
     enable_memory_snapshot=True,
     experimental_options={"enable_gpu_snapshot": True},
     max_containers=3
@@ -140,7 +140,15 @@ class Model:
         import threading
         self._adapter_lock = threading.Lock()
 
-        self._generate_text(DEFAULT_MODEL, "Hi", max_new_tokens=1)
+        # Warmup in background so the container becomes available immediately.
+        # The first real request will be slightly slower if it races the warmup,
+        # but overall perceived cold start drops by ~15-20s.
+        threading.Thread(
+            target=self._generate_text,
+            args=(DEFAULT_MODEL, "Hi"),
+            kwargs={"max_new_tokens": 1},
+            daemon=True,
+        ).start()
         print("Container restored and ready to serve.")
 
     def _generate_text(self, model_name: str, prompt: str, max_new_tokens: int = 256, temperature: float = 0.7):
@@ -315,7 +323,7 @@ def web_app():
 
         if not request.stream:
             # Non-streaming response
-            content = model.generate.remote(
+            content = await model.generate.remote.aio(
                 messages_dicts,
                 request.max_tokens or 256,
                 request.temperature or 0.7,
@@ -335,9 +343,6 @@ def web_app():
 
         # Streaming response
         def event_generator():
-            # Yield a keep-alive comment immediately so Vercel edge functions
-            # don't time out (25s limit) while waiting for the model to start.
-            yield ": ping\n\n"
             try:
                 for token in model.generate_stream.remote_gen(
                     messages_dicts,

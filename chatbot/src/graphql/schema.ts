@@ -37,7 +37,7 @@ export const typeDefs = gql`
   type Subscription {
     chatCreated(userId: ID!): Chat
     chatUpdated(userId: ID!): Chat
-    botMessageStream(chatId: ID!, messageId: ID!): MessageChunk!
+    botMessageStream(chatId: ID!): MessageChunk!
   }
 
   type SentenceImprovement {

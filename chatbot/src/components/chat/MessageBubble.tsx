@@ -7,7 +7,6 @@ import styles from './MessageBubble.module.css';
 import { Sender } from '@/types/chat';
 import TTSButton from './TTSButton';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import { useBotMessageStream } from '@/hooks/useBotMessageStream';
 
 const IMPROVE_SENTENCE_QUERY = gql`
   query ImproveSentence($chatId: ID!, $messageId: ID!) {
@@ -69,19 +68,10 @@ export default function MessageBubble({ sender, text, timestamp, messageId, chat
   const bubbleRef = useRef<HTMLDivElement>(null);
   const isUser = sender === Sender.USER;
 
-  // Use streaming hook for bot messages that are streaming
-  const shouldStream = sender === Sender.BOT && initialStreaming && !!messageId && !!chatId;
-
-  const { streamingText, isStreaming: streamActive } = useBotMessageStream(
-    shouldStream ? chatId : null,
-    shouldStream ? messageId : null,
-    shouldStream
-  );
-
-  // Use streaming text if available, otherwise use the prop text
-  // Important: Only use streamingText if we actually have streamed content
-  const displayText = (shouldStream && streamingText) ? streamingText : text;
-  const isCurrentlyStreaming = shouldStream && streamActive;
+  // ChatInterface streams text directly into the `text` prop via its subscription.
+  // We just need the isStreaming flag for the cursor/typing indicator.
+  const displayText = text;
+  const isCurrentlyStreaming = !!initialStreaming;
 
   const [improveSentence, { loading: isImproving }] = useLazyQuery<ImproveSentenceData>(
     IMPROVE_SENTENCE_QUERY,

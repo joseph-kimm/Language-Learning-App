@@ -11,6 +11,7 @@ import SideNav from '@/components/navigation/SideNav';
 import HamburgerButton from '@/components/navigation/HamburgerButton';
 import LanguageDropdown from '@/components/chat/LanguageDropdown';
 import { TargetLanguage, GetUserProfileData } from '@/types/survey';
+import { warmupModel } from '@/utils/huggingFaceLLM';
 import styles from './page.module.css';
 
 const GET_USER_PROFILE_QUERY = gql`
@@ -57,6 +58,11 @@ export default function Home() {
     }
   }, [userId, profileLoading, profileData, router]);
 
+  // Warmup the model on mount for returning users who skip the login page
+  useEffect(() => {
+    warmupModel().catch(console.error);
+  }, []);
+
   // Read chatId from URL params
   const chatId = searchParams.get('chat');
 
@@ -94,7 +100,6 @@ export default function Home() {
       <main className={styles.main}>
         <div className={styles.container}>
           <div className={styles.pageHeader}>
-            <h1 className={styles.title}></h1>
             <div className={styles.headerRight}>
               <LanguageDropdown
                 currentLanguage={selectedLanguage}

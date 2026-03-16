@@ -17,7 +17,7 @@ export default function LoginPage() {
   useEffect(() => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60_000);
-    warmupModel(controller.signal).finally(() => clearTimeout(timeoutId));
+    warmupModel(controller.signal).catch(() => {}).finally(() => clearTimeout(timeoutId));
     return () => {
       controller.abort();
       clearTimeout(timeoutId);
