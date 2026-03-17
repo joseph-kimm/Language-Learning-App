@@ -1,4 +1,4 @@
-import { ApolloClient, InMemoryCache, HttpLink, split } from '@apollo/client';
+import { ApolloClient, ApolloLink, InMemoryCache, HttpLink } from '@apollo/client';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { SSELink } from './sseLink';
 
@@ -15,23 +15,11 @@ const httpLink = new HttpLink({
 
 // SSE link for subscriptions (only on client-side)
 const sseLink = typeof window !== 'undefined'
-  ? new SSELink(
-      process.env.NEXT_PUBLIC_GRAPHQL_SSE_URL!,
-      {
-        onConnectionChange: (connected) => {
-          if (connected) {
-            // Refetch chats when SSE reconnects
-            apolloClient.refetchQueries({
-              include: ['GetChats'],
-            });
-          }
-        },
-      }
-    )
+  ? new SSELink(process.env.NEXT_PUBLIC_GRAPHQL_SSE_URL!)
   : httpLink; // Fallback to HTTP on server
 
-// Split link: route based on operation type
-const splitLink = split(
+// Route subscriptions to SSE, queries/mutations to HTTP
+const splitLink = ApolloLink.split(
   ({ query }) => {
     const definition = getMainDefinition(query);
     return (
@@ -39,8 +27,8 @@ const splitLink = split(
       definition.operation === 'subscription'
     );
   },
-  sseLink, // Subscriptions go to SSE
-  httpLink  // Queries and mutations go to HTTP
+  sseLink,
+  httpLink
 );
 
 export const apolloClient = new ApolloClient({
@@ -51,7 +39,7 @@ export const apolloClient = new ApolloClient({
         fields: {
           getChats: {
             // Merge strategy for chat list updates
-            merge(existing = [], incoming) {
+            merge(_existing, incoming) {
               return incoming;
             },
           },
