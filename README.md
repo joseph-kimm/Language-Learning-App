@@ -2,6 +2,8 @@
 
 An AI-powered language learning chatbot for practicing English, Korean, and Spanish through natural conversation. Features real-time streaming responses, fine-tuned language models, and adaptive bot personalities.
 
+[Live Demo](https://language-buddy-app-six-mu.vercel.app/)
+
 ```
 language-learning-app/
 ├── chatbot/          # Next.js full-stack web app
