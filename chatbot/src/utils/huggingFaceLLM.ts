@@ -1,13 +1,12 @@
 import type { ConversationMessage } from "@/types/llm";
 import { TargetLanguage } from "@/types/survey";
 
-const endpointUrl = process.env.LLM_URL;
-if (!endpointUrl) {
-  throw new Error('LLM_URL environment variable is not set');
-}
-
 const LLM_CONFIG = {
-  endpointUrl,
+  get endpointUrl(): string {
+    const url = process.env.LLM_URL;
+    if (!url) throw new Error('LLM_URL environment variable is not set');
+    return url;
+  },
   temperature: 0.7,
   maxTokens: 100,
 };
