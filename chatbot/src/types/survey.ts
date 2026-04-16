@@ -65,14 +65,6 @@ export enum Interests {
   OPINION = 'OPINION'
 }
 
-export enum CorrectionStyle {
-  ALWAYS = 'ALWAYS',
-  EXPLANATION = 'EXPLANATION',
-  MAJOR_ERRORS = 'MAJOR_ERRORS',
-  REPEAT = 'REPEAT',
-  NEVER = 'NEVER'
-}
-
 // ============================================
 // Client-side interfaces (GraphQL responses)
 // Timestamps are strings because JSON serialization converts Date to ISO string
@@ -127,38 +119,11 @@ export interface GetUserProfileData {
 // Form types (UI state, not database entities)
 // ============================================
 
-// Interface for each target language entry
-export interface TargetLanguageData {
-  targetLanguage: TargetLanguage;
-  proficiencyLevel: ProficiencyLevel;
-  learningGoals: string;
-}
-
-// Interface matching UserProfile from GraphQL schema
-export interface SurveyData {
-  // User section
-  introduction: string;
-  interests: Interests[];
-  additionalInterests: string[];
-  nativeLanguage: NativeLanguage;
-  // Languages section (array for multiple languages)
-  targetLanguages: TargetLanguageData[];
-}
-
 // Helper type for form state - single language entry
 export interface TargetLanguageFormState {
   targetLanguage: string;
   proficiencyLevel: string;
   learningGoals: string;
-}
-
-// Helper type for form state
-export interface SurveyFormState {
-  introduction: string;
-  interests: Interests[];
-  additionalInterests: string;
-  nativeLanguage: string;
-  targetLanguages: TargetLanguageFormState[];
 }
 
 // Helper function to convert enum values to display labels
@@ -238,13 +203,3 @@ export const getInterestLabel = (interest: Interests): string => {
   return labels[interest];
 };
 
-export const getCorrectionStyleLabel = (style: CorrectionStyle): string => {
-  const labels: Record<CorrectionStyle, string> = {
-    [CorrectionStyle.ALWAYS]: 'Always correct me',
-    [CorrectionStyle.EXPLANATION]: 'Correct with explanation',
-    [CorrectionStyle.MAJOR_ERRORS]: 'Only major errors',
-    [CorrectionStyle.REPEAT]: 'Repeat correctly without pointing out',
-    [CorrectionStyle.NEVER]: 'Never correct me'
-  };
-  return labels[style];
-};

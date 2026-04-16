@@ -8,10 +8,10 @@ import { IUserProfileDoc, NativeLanguage, Interests, TargetLanguage, Proficiency
  */
 
 // MongoDB Document interfaces - extend plain interfaces with Mongoose Document
-export interface IMessageDocument extends IMessageDoc, Document {}
-export interface IChatDocument extends IChatDoc, Document {}
-export interface IUserDocument extends IUserDoc, Document {}
-export interface IUserProfileDocument extends IUserProfileDoc, Document {}
+interface IMessageDocument extends IMessageDoc, Document {}
+interface IChatDocument extends IChatDoc, Document {}
+interface IUserDocument extends IUserDoc, Document {}
+interface IUserProfileDocument extends IUserProfileDoc, Document {}
 
 // Re-export for backwards compatibility
 export { Sender };
@@ -110,5 +110,5 @@ const UserProfileSchema = new Schema<IUserProfileDocument>({
 
 export const Message = mongoose.models.Message || mongoose.model<IMessageDocument>('Message', MessageSchema);
 export const Chat = mongoose.models.Chat || mongoose.model<IChatDocument>('Chat', ChatSchema);
-export const User = mongoose.models.User || mongoose.model<IUserDocument>('User', UserSchema);
+const User = mongoose.models.User || mongoose.model<IUserDocument>('User', UserSchema);
 export const UserProfile = mongoose.models.UserProfile || mongoose.model<IUserProfileDocument>('UserProfile', UserProfileSchema);

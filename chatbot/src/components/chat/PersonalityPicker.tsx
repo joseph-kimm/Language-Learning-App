@@ -48,4 +48,3 @@ export default function PersonalityPicker({ onSelect, selectedPersonality }: Per
   );
 }
 
-export { PERSONALITY_INFO };

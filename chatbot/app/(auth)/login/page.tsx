@@ -48,6 +48,22 @@ export default function LoginPage() {
     signIn('google', { callbackUrl: '/' });
   };
 
+  const handleDemo = async () => {
+    setError('');
+    setLoading(true);
+    const result = await signIn('credentials', {
+      email: process.env.NEXT_PUBLIC_DEMO_USER_EMAIL,
+      password: process.env.NEXT_PUBLIC_DEMO_USER_PASSWORD,
+      redirect: false,
+    });
+    setLoading(false);
+    if (result?.error) {
+      setError('Demo account unavailable. Please try again.');
+    } else {
+      router.push('/');
+    }
+  };
+
   return (
     <div className={styles.card}>
       <h1 className={styles.title}>Welcome back</h1>
@@ -92,6 +108,12 @@ export default function LoginPage() {
       <button className={styles.googleButton} onClick={handleGoogle}>
         <GoogleIcon />
         Continue with Google
+      </button>
+
+      <div className={styles.divider}>or</div>
+
+      <button className={styles.demoButton} onClick={handleDemo} disabled={loading}>
+        Try without login
       </button>
 
       <p className={styles.footer}>

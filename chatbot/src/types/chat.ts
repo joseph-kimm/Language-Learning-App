@@ -36,11 +36,6 @@ export interface IChat {
   personality?: Personality;
 }
 
-export interface IUser {
-  userId: string;
-  createdAt: string;
-}
-
 // Server-side MongoDB document interfaces (timestamps as Date objects)
 // Note: _id is automatically added by Mongoose Document, so we don't include it here
 export interface IMessageDoc {
@@ -88,10 +83,6 @@ export interface RegenerateResponseData {
 }
 
 // GraphQL query response types
-export interface GetChatsData {
-  getChats: IChat[];
-}
-
 export interface GetMessagesData {
   getMessages: IMessage[];
 }

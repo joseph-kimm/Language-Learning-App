@@ -10,7 +10,7 @@ export interface MessageChunk {
   isComplete: boolean;
 }
 
-export interface LLMError {
+interface LLMError {
   code: 'LLM_API_ERROR' | 'LLM_TIMEOUT' | 'LLM_INVALID_RESPONSE';
   message: string;
   timestamp: string;

@@ -5,7 +5,7 @@ import { MongoDBAdapter } from '@auth/mongodb-adapter';
 import bcrypt from 'bcryptjs';
 import client from '@/lib/mongodb/auth-client';
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth } = NextAuth({
   adapter: MongoDBAdapter(client),
   providers: [
     Google({

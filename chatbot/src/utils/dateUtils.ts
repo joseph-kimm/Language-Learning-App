@@ -3,7 +3,7 @@ import { IMessage } from '@/types/chat';
 /**
  * Interface for grouped messages by date
  */
-export interface MessageGroup {
+interface MessageGroup {
   date: string; // Formatted date string ("Today", "Yesterday", or full date)
   messages: IMessage[];
 }
@@ -13,7 +13,7 @@ export interface MessageGroup {
  * @param dateString - ISO 8601 timestamp or Date object
  * @returns "Today", "Yesterday", or "Month Day, Year" (e.g., "January 15, 2025")
  */
-export function formatDateDivider(dateString: string | Date): string {
+function formatDateDivider(dateString: string | Date): string {
   const messageDate = new Date(dateString);
   const today = new Date();
 

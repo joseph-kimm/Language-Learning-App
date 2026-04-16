@@ -7,7 +7,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
   },
   "packageManager": "pnpm@10.23.0",
   "dependencies": {
@@ -16,9 +19,7 @@
     "@as-integrations/next": "^4.1.0",
     "@auth/mongodb-adapter": "^3.11.1",
     "@graphql-tools/schema": "^10.0.30",
-    "@huggingface/inference": "^4.13.5",
     "bcryptjs": "^3.0.3",
-    "dataloader": "^2.2.3",
     "franc-min": "^6.2.0",
     "graphql": "^16.12.0",
     "graphql-redis-subscriptions": "^2.7.0",
@@ -37,6 +38,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/bcryptjs": "^3.0.0",
     "@types/dom-speech-recognition": "^0.0.7",
     "@types/node": "^24.10.1",

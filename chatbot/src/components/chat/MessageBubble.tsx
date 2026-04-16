@@ -138,14 +138,24 @@ export default function MessageBubble({ sender, text, timestamp, messageId, chat
           className={styles.messageContent}
           onClick={handleShowTTS}
         >
-          <p className={styles.messageText}>
-            {displayText}
-            {isCurrentlyStreaming && <span className={styles.cursor}>▊</span>}
-          </p>
-          <span className={styles.messageTime}>
-            {formatTime(timestamp)}
-            {isCurrentlyStreaming && <span> (typing...)</span>}
-          </span>
+          {!displayText && isCurrentlyStreaming ? (
+            <div className={styles.typingDots}>
+              <span className={styles.typingDot} />
+              <span className={styles.typingDot} />
+              <span className={styles.typingDot} />
+            </div>
+          ) : (
+            <>
+              <p className={styles.messageText}>
+                {displayText}
+                {isCurrentlyStreaming && <span className={styles.cursor}>▊</span>}
+              </p>
+              <span className={styles.messageTime}>
+                {formatTime(timestamp)}
+                {isCurrentlyStreaming && <span> (typing...)</span>}
+              </span>
+            </>
+          )}
 
           {showTTS && !isCurrentlyStreaming && (
             <TTSButton

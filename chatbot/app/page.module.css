@@ -1,6 +1,8 @@
 .layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .main {
@@ -9,7 +11,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  height: 100%;
   padding: 2rem;
   transition: margin-left 0.3s ease;
 }
@@ -17,13 +19,24 @@
 .container {
   width: 100%;
   max-width: 800px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .pageHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.chatWrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .title {
@@ -63,6 +76,11 @@
   .main {
     padding: 1rem;
     margin-left: 0;
+  }
+
+  .pageHeader {
+    padding-left: 3.5rem; /* clear the fixed hamburger button (44px + 16px offset) */
+    margin-bottom: 0.75rem;
   }
 
   .title {

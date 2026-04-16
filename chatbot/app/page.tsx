@@ -121,7 +121,9 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <ChatInterface chatId={chatId} onChatCreated={handleChatCreated} language={selectedLanguage} nativeLanguage={nativeLanguage} />
+          <div className={styles.chatWrapper}>
+            <ChatInterface chatId={chatId} onChatCreated={handleChatCreated} language={selectedLanguage} nativeLanguage={nativeLanguage} />
+          </div>
         </div>
       </main>
     </div>

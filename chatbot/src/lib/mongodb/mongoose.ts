@@ -60,5 +60,3 @@ export async function connectToMongoDB(): Promise<typeof mongoose> {
 
   return cached.conn;
 }
-
-export default mongoose;

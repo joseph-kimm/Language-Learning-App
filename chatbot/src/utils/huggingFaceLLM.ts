@@ -4,7 +4,7 @@ import { TargetLanguage } from "@/types/survey";
 const LLM_CONFIG = {
   get endpointUrl(): string {
     const url = process.env.LLM_URL;
-    if (!url) throw new Error('LLM_URL environment variable is not set');
+    if (!url) return '';
     return url;
   },
   temperature: 0.7,
@@ -12,6 +12,7 @@ const LLM_CONFIG = {
 };
 
 export async function warmupModel(signal?: AbortSignal): Promise<void> {
+  if (!LLM_CONFIG.endpointUrl) return;
   try {
     const response = await fetch(LLM_CONFIG.endpointUrl, {
       method: 'POST',
